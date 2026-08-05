@@ -19,11 +19,7 @@ import { useState } from 'react';
 import { MAX_INPUT_KG } from '../../config/input.ts';
 import type { SeatSlot } from '../../domain/calc/index.ts';
 import { parseWeight } from '../../domain/validation/parseWeight.ts';
-import {
-  TopView,
-  type CrewSeatCell,
-  type ZoneCell,
-} from '../aircraftMap/TopView.tsx';
+import { TopView, type CrewSeatCell } from '../aircraftMap/TopView.tsx';
 import { Disclosure } from '../../ui/components/Disclosure.tsx';
 import { FieldRow } from '../../ui/components/FieldRow.tsx';
 import { Section } from '../../ui/components/Section.tsx';
@@ -43,8 +39,6 @@ interface PassengersSectionProps {
   readonly averageKg: number;
   readonly totalKg: number;
   readonly totalLb: number;
-  /** Zonas de carga do piso, desenhadas em segundo plano. */
-  readonly zones: readonly ZoneCell[];
   /** Piloto e copiloto, para os assentos dianteiros do desenho. */
   readonly crew: readonly CrewSeatCell[];
   readonly onSelectCrew: () => void;
@@ -64,7 +58,6 @@ export function PassengersSection({
   averageKg,
   totalKg,
   totalLb,
-  zones,
   crew,
   onSelectCrew,
   onChangeLoad,
@@ -121,7 +114,6 @@ export function PassengersSection({
             selectedSeatId={selectedSeatId}
             onSelectSeat={handleSeat}
             crew={crew}
-            zones={zones}
             onSelectCrew={onSelectCrew}
           />
 

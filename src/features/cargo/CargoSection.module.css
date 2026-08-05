@@ -1,7 +1,20 @@
-/* O controle em si mora em `ui/components/SegmentedControl`; aqui fica só o
-   espaçamento de cada uso. */
+/* Os controles em si moram em `ui/components`; aqui fica só o espaçamento de
+   cada uso dentro da seção. */
+.unitRow {
+  display: flex;
+  justify-content: flex-end;
+  padding: 8px 0 2px;
+}
+
 .restraint {
   margin: 8px 0 6px;
+}
+
+.restraintHint {
+  font-size: var(--size-small);
+  color: var(--ink-3);
+  line-height: 1.45;
+  margin-bottom: 4px;
 }
 
 /* Bloco do compartimento selecionado no desenho. */
@@ -22,86 +35,6 @@
   font-size: var(--size-small);
   color: var(--ink-3);
   line-height: 1.45;
-}
-
-.unitRow {
-  display: flex;
-  justify-content: flex-end;
-  padding: 8px 0 2px;
-}
-
-.restraintHint {
-  font-size: var(--size-small);
-  color: var(--ink-3);
-  line-height: 1.45;
-  margin-bottom: 4px;
-}
-
-.group {
-  display: flex;
-  align-items: baseline;
-  gap: var(--sp-2);
-  margin-top: var(--sp-3);
-  padding: 6px 0 4px;
-  border-bottom: 1px solid var(--line);
-}
-
-.groupTitle {
-  font-size: var(--size-micro);
-  font-weight: 700;
-  letter-spacing: var(--track-caps);
-  text-transform: uppercase;
-  color: var(--ink-3);
-}
-
-.disclosure .groupTotal {
-  margin-left: auto;
-}
-
-.groupTotal {
-  margin-left: auto;
-  font-family: var(--font-num);
-  font-variant-numeric: tabular-nums;
-  font-size: var(--size-small);
-  font-weight: 700;
-  color: var(--ink-2);
-}
-
-.groupOver {
-  color: var(--crit);
-}
-
-/* Cabeçalho recolhível da cabine. Repete a forma do .group para que abrir e
-   fechar não mude o desenho da seção. */
-.disclosure {
-  display: flex;
-  align-items: baseline;
-  gap: var(--sp-2);
-  width: 100%;
-  margin-top: var(--sp-3);
-  padding: 6px 0 4px;
-  border-bottom: 1px solid var(--line);
-  border-radius: 0;
-  text-align: left;
-}
-
-.disclosure:not(:disabled):hover .groupTitle {
-  color: var(--ink-2);
-}
-
-.disclosure:disabled {
-  cursor: default;
-}
-
-.disclosure:focus-visible {
-  outline: 2px solid var(--accent);
-  outline-offset: 2px;
-}
-
-.chevron {
-  flex: none;
-  font-size: 10px;
-  color: var(--ink-3);
 }
 
 .lockNote {

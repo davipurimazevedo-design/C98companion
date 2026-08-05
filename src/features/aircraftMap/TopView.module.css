@@ -2,17 +2,17 @@
    é colocado pela estação, em porcentagem, pela régua de `stationScale`. */
 .frame {
   position: relative;
-  height: 168px;
+  height: 134px;
   margin: var(--sp-2) 0 var(--sp-1);
 }
 
 /* Contorno da cabine, e ao mesmo tempo o sistema de coordenadas dos assentos:
-   as faixas laterais são porcentagem DESTA altura, não a da caixa inteira.
-   Ilustrativo — o que posiciona qualquer coisa é a estação. O canto
-   arredondado à esquerda sugere o nariz sem afirmar proporção. */
+   as faixas laterais são porcentagem DESTA altura. Ilustrativo — o que
+   posiciona qualquer coisa é a estação. O canto arredondado à esquerda sugere
+   o nariz sem afirmar proporção. */
 .deck {
   position: absolute;
-  inset: 0 0 34px 0;
+  inset: 0;
   border: 1.5px solid var(--line);
   border-radius: 46px 14px 14px 46px;
   background: var(--surface-2);
@@ -47,55 +47,4 @@
   border-style: solid;
   border-color: var(--ink-3);
   color: var(--ink-2);
-}
-
-/* Régua das zonas de carga do piso, abaixo do contorno. */
-.zoneAxis {
-  position: absolute;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  height: 26px;
-}
-
-.zone {
-  position: absolute;
-  top: 0;
-  bottom: 0;
-  display: grid;
-  place-items: center;
-  border: 1px solid var(--line-soft);
-  border-radius: var(--radius-sm);
-  background: var(--surface-2);
-  overflow: hidden;
-  transition:
-    background-color var(--dur-fast) var(--ease),
-    border-color var(--dur-fast) var(--ease);
-}
-
-.zoneLoaded {
-  border-color: color-mix(in srgb, var(--accent) 45%, transparent);
-  background: var(--accent-soft);
-}
-
-.zoneOver {
-  border-color: var(--crit);
-  background: var(--crit-soft);
-}
-
-.zoneLabel {
-  font-family: var(--font-num);
-  font-variant-numeric: tabular-nums;
-  font-size: var(--size-micro);
-  font-weight: 700;
-  color: var(--ink-3);
-  white-space: nowrap;
-}
-
-.zoneLoaded .zoneLabel {
-  color: var(--accent);
-}
-
-.zoneOver .zoneLabel {
-  color: var(--crit);
 }

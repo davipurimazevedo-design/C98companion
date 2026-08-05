@@ -1,21 +1,21 @@
 /**
- * Carga.
+ * Carga — um grupo de posições, com o próprio desenho.
  *
- * A vista lateral é a forma principal de lançar: tocar o compartimento abre o
- * peso dele. As listas numéricas continuam existindo, recolhidas, para
- * conferência e para quem prefere digitar.
+ * Este componente é usado DUAS vezes, e é de propósito que seja o mesmo:
  *
- * O cargo pod vem primeiro porque é onde a carga costuma ir. As zonas da cabine
- * ficam recolhidas, para o caso de voo com os bancos removidos.
+ *   CARGO POD      — aberto, sempre à vista. É onde a carga vai na maioria das
+ *                    missões, que são passageiros mais carga nos pods.
+ *   CARGA NA CABINE — recolhida. Só entra em voo com os bancos removidos, e
+ *                    ocupava meia tela de rolagem em todo planejamento normal.
  *
- * Regra que não se negocia: peso lançado nunca fica escondido. O subtotal da
- * cabine aparece no cabeçalho mesmo recolhida, e com carga dentro ela não pode
- * ser fechada — do contrário o piloto poderia esquecer 400 LB fora de vista.
+ * A única diferença real entre as duas é o seletor de amarração, que o manual
+ * publica apenas para as zonas — os compartimentos do pod têm um valor único,
+ * igual nos dois modos. Por isso ele entra por propriedade, e não por cópia do
+ * componente.
  *
- * O seletor de amarração fica dentro da cabine porque é só ali que ele muda
- * alguma coisa: o manual publica limites bem diferentes para carga amarrada e
- * carga contida por divisórias nas zonas, mas os compartimentos do pod têm um
- * único valor, igual nos dois modos.
+ * Regra que não se negocia: peso lançado nunca fica escondido. O subtotal
+ * aparece no cabeçalho mesmo com a seção recolhida, e com carga dentro ela não
+ * pode ser fechada.
  */
 
 import { useState } from 'react';
@@ -36,35 +36,41 @@ import { fieldError } from '../../ui/fieldError.ts';
 import { formatKg, formatLb } from '../../utils/format.ts';
 import styles from './CargoSection.module.css';
 
+/** O seletor de amarração, quando o grupo o tiver. */
+interface RestraintControl {
+  readonly value: CargoRestraint;
+  readonly onChange: (restraint: CargoRestraint) => void;
+}
+
 interface CargoSectionProps {
+  readonly title: string;
   readonly positions: readonly LoadPosition[];
   readonly positionLoads: Readonly<Record<string, string>>;
   /** Peso já convertido para libras, para o desenho e os limites. */
   readonly loadedLb: Readonly<Record<string, number>>;
   readonly unit: CargoUnit;
   readonly onChangeUnit: (unit: CargoUnit) => void;
-  readonly restraint: CargoRestraint;
-  readonly cabinOpen: boolean;
   readonly totalLb: number;
-  readonly cabinLb: number;
-  readonly podLb: number;
-  readonly maxCabinLb: number | null;
-  readonly maxPodLb: number | null;
+  readonly maxLb: number | null;
   /**
-   * Centragem apurada, marcada sobre o desenho.
-   *
-   * Mora aqui, e não só na seção Centragem, porque é aqui que a carga se move:
-   * ver o traço andar em direção ao limite enquanto se lança peso responde à
-   * pergunta na hora.
+   * Centragem marcada sobre o desenho. `null` na seção que não a exibe —
+   * desenhar a mesma marca duas vezes na tela não ajudaria ninguém.
    */
   readonly cg: CgResult | null;
+  /** Presente só no grupo em que o manual publica dois limites. */
+  readonly restraint?: RestraintControl;
+  /** Recolhível. Ausente, a seção fica sempre aberta. */
+  readonly collapse?: {
+    readonly open: boolean;
+    readonly onToggle: (open: boolean) => void;
+  };
+  /** Nome da lista numérica recolhível, ao pé da seção. */
+  readonly listLabel: string;
   readonly onChangePosition: (positionId: string, text: string) => void;
-  readonly onChangeRestraint: (restraint: CargoRestraint) => void;
-  readonly onToggleCabin: (open: boolean) => void;
 }
 
 /**
- * Total de um grupo, sempre em libras — é nelas que os limites do manual estão
+ * Total do grupo, sempre em libras — é nelas que os limites do manual estão
  * escritos, e é o número que precisa ser conferível contra o papel.
  */
 function total(loaded: number, max: number | null): string {
@@ -80,35 +86,26 @@ function shortLabel(position: LoadPosition): string {
 }
 
 export function CargoSection({
+  title,
   positions,
   positionLoads,
   loadedLb,
   unit,
   onChangeUnit,
-  restraint,
-  cabinOpen,
   totalLb,
-  cabinLb,
-  podLb,
-  maxCabinLb,
-  maxPodLb,
+  maxLb,
   cg,
+  restraint,
+  collapse,
+  listLabel,
   onChangePosition,
-  onChangeRestraint,
-  onToggleCabin,
 }: CargoSectionProps) {
   const [selectedId, setSelectedId] = useState<string | null>(null);
-  const [podListOpen, setPodListOpen] = useState(false);
+  const [listOpen, setListOpen] = useState(false);
 
-  const cabin = positions.filter((position) => position.group === 'cabine');
-  const pod = positions.filter((position) => position.group === 'pod');
   const inKg = unit === 'kg';
-
-  /* Com carga lançada a cabine abre sozinha e não fecha. */
-  const cabinLoaded = cabinLb > 0;
-  const cabinVisible = cabinOpen || cabinLoaded;
-  const cabinOver = maxCabinLb !== null && cabinLb > maxCabinLb;
-  const podOver = maxPodLb !== null && podLb > maxPodLb;
+  const over = maxLb !== null && totalLb > maxLb;
+  const loaded = totalLb > 0;
 
   /* Só entram no desenho as posições com as estações cadastradas: sem elas não
      há como saber onde a posição cai no perfil. */
@@ -116,8 +113,8 @@ export function CargoSection({
     const { fromIn, toIn } = position;
     if (fromIn === null || toIn === null) return [];
 
-    const loaded = loadedLb[position.id] ?? 0;
-    const limit = limitOf(position, restraint);
+    const positionLb = loadedLb[position.id] ?? 0;
+    const limit = limitOf(position, restraint?.value ?? 'amarrada');
 
     return [
       {
@@ -127,14 +124,14 @@ export function CargoSection({
         group: position.group,
         fromIn,
         toIn,
-        loadedLb: loaded,
-        over: limit !== null && loaded > limit,
+        loadedLb: positionLb,
+        over: limit !== null && positionLb > limit,
       },
     ];
   });
 
   const hintOf = (position: LoadPosition) => {
-    const limit = limitOf(position, restraint);
+    const limit = limitOf(position, restraint?.value ?? 'amarrada');
     if (limit === null) return 'Limite não cadastrado';
     return inKg
       ? `Máx. ${formatKg(Math.floor(lbToKg(limit)))} kg`
@@ -174,9 +171,21 @@ export function CargoSection({
 
   return (
     <Section
-      title="Carga"
-      subtotal={`${formatLb(totalLb)} LB · ${formatKg(Math.round(lbToKg(totalLb)))} kg`}
+      title={title}
+      subtotal={total(totalLb, maxLb)}
+      over={over}
+      {...(collapse
+        ? {
+            collapsible: true,
+            open: collapse.open,
+            locked: loaded,
+            onToggle: collapse.onToggle,
+          }
+        : {})}
     >
+      {/* O seletor aparece nas duas seções, ligado ao mesmo estado: é uma
+          preferência só, oferecida onde se está trabalhando. Deixá-la apenas
+          numa delas obrigaria a rolar a tela para trocar a unidade da outra. */}
       <div className={styles.unitRow}>
         <SegmentedControl
           compact
@@ -189,6 +198,27 @@ export function CargoSection({
           ]}
         />
       </div>
+
+      {restraint && (
+        <>
+          <div className={styles.restraint}>
+            <SegmentedControl
+              label="Amarração da carga na cabine"
+              value={restraint.value}
+              onChange={restraint.onChange}
+              options={[
+                { value: 'amarrada', label: 'Amarrada' },
+                { value: 'sem-amarracao', label: 'Sem amarração' },
+              ]}
+            />
+          </div>
+          <p className={styles.restraintHint}>
+            {restraint.value === 'amarrada'
+              ? 'Limites de carga presa por tie-downs.'
+              : 'Limites de carga contida por divisórias. Exige densidade até 7,9 lb/ft³ e baia 75% cheia.'}
+          </p>
+        </>
+      )}
 
       {cells.length > 0 && (
         <>
@@ -225,68 +255,28 @@ export function CargoSection({
               Toque um compartimento do desenho para lançar o peso dele.
             </p>
           )}
-        </>
-      )}
 
-      {pod.length > 0 && (
-        <>
           <Disclosure
-            title="Cargo pod"
-            total={total(podLb, maxPodLb)}
-            over={podOver}
-            open={podListOpen}
-            onToggle={setPodListOpen}
+            title={listLabel}
+            total={total(totalLb, maxLb)}
+            over={over}
+            open={listOpen}
+            onToggle={setListOpen}
           />
-          {podListOpen && pod.map(renderPosition)}
-        </>
-      )}
-
-      {cabin.length > 0 && (
-        <>
-          <Disclosure
-            title="Carga na cabine"
-            total={total(cabinLb, maxCabinLb)}
-            over={cabinOver}
-            open={cabinVisible}
-            locked={cabinLoaded}
-            onToggle={onToggleCabin}
-          />
-
-          {cabinVisible && (
-            <>
-              <div className={styles.restraint}>
-                <SegmentedControl
-                  label="Amarração da carga na cabine"
-                  value={restraint}
-                  onChange={onChangeRestraint}
-                  options={[
-                    { value: 'amarrada', label: 'Amarrada' },
-                    { value: 'sem-amarracao', label: 'Sem amarração' },
-                  ]}
-                />
-              </div>
-              <p className={styles.restraintHint}>
-                {restraint === 'amarrada'
-                  ? 'Limites de carga presa por tie-downs.'
-                  : 'Limites de carga contida por divisórias. Exige densidade até 7,9 lb/ft³ e baia 75% cheia.'}
-              </p>
-
-              {cabin.map(renderPosition)}
-            </>
-          )}
-
-          {cabinLoaded && (
-            <p className={styles.lockNote}>
-              Há carga lançada na cabine, então estas zonas permanecem à vista.
-              Zere os campos para recolher.
-            </p>
-          )}
+          {listOpen && positions.map(renderPosition)}
         </>
       )}
 
       {positions.length === 0 && (
         <p className={styles.empty}>
           Nenhuma posição de carga cadastrada para esta aeronave.
+        </p>
+      )}
+
+      {collapse && loaded && (
+        <p className={styles.lockNote}>
+          Há carga lançada aqui, então esta seção permanece à vista. Zere os
+          campos para recolher.
         </p>
       )}
     </Section>

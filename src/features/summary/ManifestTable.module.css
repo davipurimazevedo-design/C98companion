@@ -87,9 +87,3 @@
   font-variant-numeric: tabular-nums;
   font-weight: 600;
 }
-
-.origin {
-  color: var(--ink-3);
-  font-family: var(--font-num);
-  font-variant-numeric: tabular-nums;
-}

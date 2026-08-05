@@ -9,11 +9,34 @@
   display: flex;
   align-items: center;
   gap: var(--sp-2);
+  width: 100%;
   padding: 11px var(--sp-4) 9px;
   border-bottom: 1px solid var(--line-soft);
+  text-align: left;
 }
 
+.headerButton {
+  border-radius: 0;
+}
+
+.headerButton:not(:disabled):hover .title {
+  color: var(--ink);
+}
+
+.headerButton:disabled {
+  cursor: default;
+}
+
+.headerButton:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: -2px;
+}
+
+/* O título ocupa a sobra e empurra controle e subtotal para a direita, na
+   ordem em que aparecem. Sem margens automáticas competindo entre si. */
 .title {
+  flex: 1 1 auto;
+  min-width: 0;
   font-size: var(--size-eyebrow);
   font-weight: 700;
   letter-spacing: var(--track-eyebrow);
@@ -21,8 +44,13 @@
   color: var(--ink-2);
 }
 
+.control {
+  flex: none;
+  display: flex;
+}
+
 .subtotal {
-  margin-left: auto;
+  flex: none;
   font-family: var(--font-num);
   font-variant-numeric: tabular-nums;
   font-size: var(--size-small);
@@ -33,6 +61,18 @@
   border-radius: var(--radius-pill);
   padding: 2px 9px;
   white-space: nowrap;
+}
+
+.over {
+  color: var(--crit);
+  border-color: color-mix(in srgb, var(--crit) 35%, transparent);
+  background: var(--crit-soft);
+}
+
+.chevron {
+  flex: none;
+  font-size: 10px;
+  color: var(--ink-3);
 }
 
 .body {

@@ -15,15 +15,12 @@ import {
   getProfile,
 } from '../data/aircraft/index.ts';
 import { AVERAGE_PASSENGER_KG } from '../data/operational.ts';
-import { isPresent } from '../data/pending.ts';
 import {
   computePlanResult,
   distributeBySeats,
   isReady,
-  limitOf,
   valueOrNull,
 } from '../domain/calc/index.ts';
-import type { ZoneCell } from '../features/aircraftMap/TopView.tsx';
 import { AircraftSection } from '../features/aircraft/AircraftSection.tsx';
 import { CargoSection } from '../features/cargo/CargoSection.tsx';
 import { CgCard } from '../features/cg/CgCard.tsx';
@@ -103,30 +100,12 @@ export function PlanningScreen() {
     }
   };
 
-  /* Zonas do piso desenhadas em segundo plano no mapa da cabine. Uma zona sem
-     as estações cadastradas simplesmente não é desenhada — não há como saber
-     onde ela cai. */
-  const zoneCells: ZoneCell[] = result.positions
-    .filter((position) => position.group === 'cabine')
-    .flatMap((position) => {
-      const { fromIn, toIn } = position;
-      if (!isPresent(fromIn) || !isPresent(toIn)) return [];
-
-      const loadedLb = plan.positionLoads[position.id] ?? 0;
-      const limit = limitOf(position, plan.cargoRestraint);
-
-      return [
-        {
-          id: position.id,
-          short: position.label.replace(/\D+/g, ''),
-          label: position.label,
-          fromIn,
-          toIn,
-          loadedLb,
-          over: limit !== null && loadedLb > limit,
-        },
-      ];
-    });
+  const podPositions = result.positions.filter(
+    (position) => position.group === 'pod',
+  );
+  const cabinPositions = result.positions.filter(
+    (position) => position.group === 'cabine',
+  );
 
   /* Assentos 1 e 2 do desenho: os dois primeiros da tripulação, que é onde o
      manual coloca piloto e copiloto. Tripulantes além disso entram no cálculo
@@ -206,7 +185,6 @@ export function PlanningScreen() {
           averageKg={AVERAGE_PASSENGER_KG}
           totalKg={totals.passengerKg}
           totalLb={totals.passengerLb}
-          zones={zoneCells}
           crew={crewCells}
           onSelectCrew={() =>
             crewRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' })
@@ -223,28 +201,48 @@ export function PlanningScreen() {
           }}
         />
 
-        <CargoSection
-          positions={result.positions}
-          positionLoads={draft.positionLoads}
-          loadedLb={plan.positionLoads}
-          cg={result.cg}
-          unit={draft.cargoUnit}
-          onChangeUnit={setCargoUnit}
-          restraint={draft.cargoRestraint}
-          cabinOpen={draft.cabinCargoOpen}
-          totalLb={totals.cargoLb}
-          cabinLb={totals.cabinCargoLb}
-          podLb={totals.podCargoLb}
-          maxCabinLb={profile.model.limits.maxCabinCargoLb}
-          maxPodLb={
-            profile.registration.hasCargoPod
-              ? profile.model.limits.maxCargoPodLb
-              : null
-          }
-          onChangePosition={setPositionLoad}
-          onChangeRestraint={setCargoRestraint}
-          onToggleCabin={setCabinCargoOpen}
-        />
+        {/* O pod primeiro e aberto: é onde a carga vai na maioria das missões.
+            A régua do CG fica nele, que é a seção sempre à vista. */}
+        {podPositions.length > 0 && (
+          <CargoSection
+            title="Cargo pod"
+            positions={podPositions}
+            positionLoads={draft.positionLoads}
+            loadedLb={plan.positionLoads}
+            cg={result.cg}
+            unit={draft.cargoUnit}
+            onChangeUnit={setCargoUnit}
+            totalLb={totals.podCargoLb}
+            maxLb={profile.model.limits.maxCargoPodLb}
+            listLabel="Peso compartimento a compartimento"
+            onChangePosition={setPositionLoad}
+          />
+        )}
+
+        {/* A cabine recolhida: só entra em voo com os bancos removidos. */}
+        {cabinPositions.length > 0 && (
+          <CargoSection
+            title="Carga na cabine"
+            positions={cabinPositions}
+            positionLoads={draft.positionLoads}
+            loadedLb={plan.positionLoads}
+            cg={null}
+            unit={draft.cargoUnit}
+            onChangeUnit={setCargoUnit}
+            totalLb={totals.cabinCargoLb}
+            maxLb={profile.model.limits.maxCabinCargoLb}
+            restraint={{
+              value: draft.cargoRestraint,
+              onChange: setCargoRestraint,
+            }}
+            collapse={{
+              open: draft.cabinCargoOpen,
+              onToggle: setCabinCargoOpen,
+            }}
+            listLabel="Peso zona a zona"
+            onChangePosition={setPositionLoad}
+          />
+        )}
 
         <SummaryCard result={result} />
 

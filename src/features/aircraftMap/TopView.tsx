@@ -5,35 +5,16 @@
  * cauda à direita, e tudo posicionado pela estação em polegadas. O contorno é
  * ilustrativo; as COTAS é que são do manual.
  *
- * Duas camadas, na ordem em que se lê:
- *
- *   ASSENTOS  — o que se toca para embarcar gente.
- *   ZONAS     — a régua de carga do piso, numa faixa abaixo do contorno, para
- *               não competir com os assentos nem sobrepor rótulo em cima deles.
- *
- * As zonas aqui são só leitura. Carga se lança na vista lateral e na seção
- * Carga; dois lugares tocáveis com comportamentos diferentes confundiriam mais
- * do que ajudariam.
+ * Só assentos. As zonas de carga do piso pertencem à seção Carga, que tem o
+ * próprio desenho — repeti-las aqui competia com os assentos numa tela em que
+ * o que se decide é onde as pessoas sentam.
  */
 
 import { CREW_ARM_IN } from '../../data/aircraft/c98.arms.ts';
 import type { SeatSlot } from '../../domain/calc/index.ts';
-import { formatLb } from '../../utils/format.ts';
 import { SeatButton } from './SeatButton.tsx';
-import { percentBetween, percentOfStation } from './stationScale.ts';
+import { percentOfStation } from './stationScale.ts';
 import styles from './TopView.module.css';
-
-/** Uma zona de carga do piso, já resolvida para exibição. */
-export interface ZoneCell {
-  readonly id: string;
-  /** Número exibido na régua. Ex.: "3". */
-  readonly short: string;
-  readonly label: string;
-  readonly fromIn: number;
-  readonly toIn: number;
-  readonly loadedLb: number;
-  readonly over: boolean;
-}
 
 /** Um lugar da tripulação, para desenhar os assentos 1 e 2. */
 export interface CrewSeatCell {
@@ -49,7 +30,6 @@ interface TopViewProps {
   readonly onSelectSeat: (seatId: string) => void;
   /** Piloto e copiloto, nesta ordem. */
   readonly crew: readonly CrewSeatCell[];
-  readonly zones: readonly ZoneCell[];
   /** Leva à seção Tripulação ao tocar um dos assentos dianteiros. */
   readonly onSelectCrew: () => void;
 }
@@ -82,7 +62,6 @@ export function TopView({
   selectedSeatId,
   onSelectSeat,
   crew,
-  zones,
   onSelectCrew,
 }: TopViewProps) {
   /* Quantos assentos já foram desenhados na mesma estação e do mesmo lado —
@@ -132,30 +111,6 @@ export function TopView({
             />
           );
         })}
-      </div>
-
-      <div className={styles.zoneAxis}>
-        {zones.map((zone) => (
-          <div
-            key={zone.id}
-            className={`${styles.zone} ${zone.loadedLb > 0 ? styles.zoneLoaded : ''} ${
-              zone.over ? styles.zoneOver : ''
-            }`}
-            style={{
-              left: percentOfStation(zone.fromIn),
-              width: percentBetween(zone.fromIn, zone.toIn),
-            }}
-            title={
-              zone.loadedLb > 0
-                ? `${zone.label}: ${formatLb(zone.loadedLb)} LB`
-                : `${zone.label}: vazia`
-            }
-          >
-            <span className={styles.zoneLabel}>
-              {zone.loadedLb > 0 ? formatLb(zone.loadedLb) : zone.short}
-            </span>
-          </div>
-        ))}
       </div>
     </div>
   );

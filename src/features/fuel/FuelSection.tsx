@@ -5,9 +5,13 @@
  * cálculo do peso, e o aplicativo responde quanto ainda pode ser somado.
  *
  * O seletor de unidade existe porque o abastecimento é feito em litros, e
- * converter de cabeça no pátio é onde o erro custa caro. O subtotal mostra
- * sempre as duas unidades — as libras nunca somem da tela, já que é nelas que
- * todos os limites do manual estão escritos.
+ * converter de cabeça no pátio é onde o erro custa caro. Ele fica na linha do
+ * título: é preferência da seção inteira, e ali não rouba uma linha do corpo.
+ *
+ * O subtotal do cabeçalho é sempre em LIBRAS. Digitando em litros, o cabeçalho
+ * passa a mostrar quanto aquilo dá em libras — a conversão fica à vista sem
+ * pedir. E as libras, que são a unidade de todo limite do manual, nunca somem
+ * do topo da seção.
  */
 
 import { MAX_INPUT_L, MAX_INPUT_LB } from '../../config/input.ts';
@@ -65,28 +69,27 @@ export function FuelSection({
   const maxAllowedLb =
     additionalLb !== null && additionalLb > 0 ? totalLb + additionalLb : null;
 
-  const subtotal =
-    canUseLitres && densityLbPerGal !== null
-      ? `${formatLb(totalLb)} LB · ${formatL(lbToLitres(totalLb, densityLbPerGal))} L`
-      : `${formatLb(totalLb)} LB`;
+  /* Rótulos curtos: com "Litros" os três elementos do cabeçalho não caberiam
+     numa tela de 375 px sem risco de aperto. */
+  const unitControl = canUseLitres ? (
+    <SegmentedControl
+      compact
+      label="Unidade do combustível"
+      value={unit}
+      onChange={onChangeUnit}
+      options={[
+        { value: 'LB', label: 'LB' },
+        { value: 'L', label: 'L' },
+      ]}
+    />
+  ) : undefined;
 
   return (
-    <Section title="Combustível" subtotal={subtotal}>
-      {canUseLitres && (
-        <div className={styles.unitRow}>
-          <SegmentedControl
-            compact
-            label="Unidade do combustível"
-            value={unit}
-            onChange={onChangeUnit}
-            options={[
-              { value: 'LB', label: 'LB' },
-              { value: 'L', label: 'Litros' },
-            ]}
-          />
-        </div>
-      )}
-
+    <Section
+      title="Combustível"
+      subtotal={`${formatLb(totalLb)} LB`}
+      {...(unitControl ? { control: unitControl } : {})}
+    >
       <FieldRow
         label="Mínimo da perna"
         hint={
