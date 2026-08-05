@@ -24,9 +24,11 @@
   box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 22%, transparent);
 }
 
+/* Uma coluna: com um mostrador só, duas deixariam metade do cartão vazia com a
+   moldura à mostra. */
 .readouts {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: 1fr;
   gap: 1px;
   margin-top: var(--sp-3);
   background: var(--line-soft);

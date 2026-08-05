@@ -11,7 +11,7 @@
 /** Um tripulante. O peso é informado em quilogramas. */
 export interface CrewMember {
   readonly id: string;
-  /** Função a bordo: Piloto, Copiloto, Mecânico, Mestre de Carga… */
+  /** Função a bordo: Piloto, Copiloto, Mecânico, Segundo Mecânico… */
   readonly role: string;
   readonly weightKg: number;
 }

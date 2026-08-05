@@ -14,6 +14,7 @@ import {
   convertCargoLoads,
   convertFuelText,
   initialDraft,
+  nextCrewRole,
   toMissionPlan,
   type PlanDraft,
 } from './draft.ts';
@@ -224,5 +225,75 @@ describe('coerência da tabela de combustível', () => {
     /* Os ~24 LB de diferença já estão no peso básico da aeronave, e por isso o
        limite do cálculo continua sendo o utilizável. */
     expect(total - utilizavel).toBeCloseTo(24, 0);
+  });
+});
+
+describe('funções sugeridas ao acrescentar tripulante', () => {
+  /* Piloto e copiloto já vêm no rascunho inicial. */
+  const BORDO = ['Piloto', 'Copiloto'];
+
+  it('segue a tripulação do esquadrão: mecânico e segundo mecânico', () => {
+    expect(nextCrewRole(BORDO)).toBe('Mecânico');
+    expect(nextCrewRole([...BORDO, 'Mecânico'])).toBe('Segundo Mecânico');
+  });
+
+  it('depois disso numera contando a tripulação inteira', () => {
+    /* "Tripulante 5" porque ele é o quinto a bordo — piloto e copiloto também
+       são tripulantes, ainda que tenham nome próprio. */
+    const completa = [...BORDO, 'Mecânico', 'Segundo Mecânico'];
+    expect(nextCrewRole(completa)).toBe('Tripulante 5');
+    expect(nextCrewRole([...completa, 'Tripulante 5'])).toBe('Tripulante 6');
+  });
+
+  it('não sugere mais mestre de carga', () => {
+    const sequencia: string[] = [];
+    let bordo = [...BORDO];
+    for (let i = 0; i < 6; i += 1) {
+      const role = nextCrewRole(bordo);
+      sequencia.push(role);
+      bordo = [...bordo, role];
+    }
+
+    expect(sequencia).not.toContain('Mestre de Carga');
+    expect(sequencia).toEqual([
+      'Mecânico',
+      'Segundo Mecânico',
+      'Tripulante 5',
+      'Tripulante 6',
+      'Tripulante 7',
+      'Tripulante 8',
+    ]);
+  });
+
+  /**
+   * Regressão: acrescentar depois de remover alguém do meio da lista.
+   *
+   * A versão anterior contava a tripulação e devolvia "Tripulante 6" para uma
+   * tripulação que já tinha um Tripulante 6 — duas linhas com o mesmo nome numa
+   * lista de pesos, convidando a lançar o peso na errada.
+   */
+  it('nunca repete um nome que já está a bordo', () => {
+    const bordo = [
+      ...BORDO,
+      'Mecânico',
+      'Segundo Mecânico',
+      'Tripulante 5',
+      'Tripulante 6',
+    ];
+    expect(nextCrewRole(bordo)).toBe('Tripulante 7');
+  });
+
+  it('devolve a função que vagou, em vez de um número', () => {
+    /* Tirar o Segundo Mecânico e acrescentar de novo traz ele de volta. */
+    const semSegundo = [...BORDO, 'Mecânico', 'Tripulante 5', 'Tripulante 6'];
+    expect(nextCrewRole(semSegundo)).toBe('Segundo Mecânico');
+
+    const semMecanico = [...BORDO, 'Segundo Mecânico'];
+    expect(nextCrewRole(semMecanico)).toBe('Mecânico');
+  });
+
+  it('a tripulação inicial já traz piloto e copiloto', () => {
+    const crew = initialDraft('fab-2720').crew;
+    expect(crew.map((member) => member.role)).toEqual(BORDO);
   });
 });

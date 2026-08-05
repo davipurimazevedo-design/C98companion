@@ -3,6 +3,11 @@
  *
  * Os dados permanentes aparecem somente para leitura: são da ficha de pesagem e
  * o piloto nunca os edita durante o planejamento.
+ *
+ * Só o peso básico é exibido. O momento básico da ficha continua cadastrado e
+ * alimenta o cálculo de centragem, mas não é informação de decisão — ninguém
+ * planeja olhando para 982.577,4, e ocupar meia tela com ele treina o olho a
+ * ignorar o cartão.
  */
 
 import { listAircraft } from '../../data/aircraft/index.ts';
@@ -15,8 +20,6 @@ interface AircraftSectionProps {
   readonly registration: AircraftRegistration;
   readonly onSelect: (id: string) => void;
 }
-
-const integer = new Intl.NumberFormat('pt-BR', { maximumFractionDigits: 0 });
 
 export function AircraftSection({
   registration,
@@ -54,14 +57,6 @@ export function AircraftSection({
                 <span className={styles.unit}>LB</span>
               </>
             )}
-          </dd>
-        </div>
-        <div className={styles.readout}>
-          <dt className={styles.term}>Momento básico</dt>
-          <dd className={styles.definition}>
-            {registration.basicMoment === null
-              ? DASH
-              : integer.format(registration.basicMoment)}
           </dd>
         </div>
       </dl>

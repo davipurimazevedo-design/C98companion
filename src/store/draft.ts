@@ -101,8 +101,40 @@ export function initialDraft(aircraftId: string): PlanDraft {
   };
 }
 
-/** Funções sugeridas ao acrescentar tripulantes, na ordem de uso. */
-export const EXTRA_CREW_ROLES = ['Mecânico', 'Mestre de Carga'] as const;
+/**
+ * Funções sugeridas ao acrescentar tripulantes, na ordem de uso.
+ *
+ * Vale para os que entram DEPOIS de piloto e copiloto, que já vêm no rascunho
+ * inicial. Esgotada a lista, a numeração continua genérica.
+ */
+export const EXTRA_CREW_ROLES = ['Mecânico', 'Segundo Mecânico'] as const;
+
+/**
+ * Função sugerida para o próximo tripulante.
+ *
+ * @param currentRoles Funções já a bordo, incluindo piloto e copiloto.
+ *
+ * Duas regras, nesta ordem:
+ *
+ * 1. A primeira função da lista que ainda não está a bordo. Assim, remover o
+ *    Mecânico e acrescentar de novo devolve "Mecânico", e não um número.
+ * 2. Esgotada a lista, numeração contando a tripulação INTEIRA — o quinto a
+ *    bordo é "Tripulante 5", não "Tripulante 3". É como o piloto lê a lista:
+ *    piloto e copiloto também são tripulantes, ainda que tenham nome próprio.
+ *
+ * Nenhum nome se repete. Repetir seria pior do que numerar feio: duas linhas
+ * "Tripulante 6" numa lista de pesos convidam a lançar o peso na errada.
+ */
+export function nextCrewRole(currentRoles: readonly string[]): string {
+  const taken = new Set(currentRoles);
+
+  const suggested = EXTRA_CREW_ROLES.find((role) => !taken.has(role));
+  if (suggested !== undefined) return suggested;
+
+  let position = currentRoles.length + 1;
+  while (taken.has(`Tripulante ${position}`)) position += 1;
+  return `Tripulante ${position}`;
+}
 
 /**
  * Reescreve um texto digitado noutra unidade, preservando a grandeza física.

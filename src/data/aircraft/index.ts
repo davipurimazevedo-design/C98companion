@@ -98,11 +98,16 @@ export function canDrawCabinMap(profile: AircraftProfile): boolean {
 /**
  * Lista, prontos para exibição, os dados que IMPEDEM algum cálculo.
  *
- * Só entram aqui campos dos quais um resultado depende. Momento básico e data
- * de pesagem ficam de fora de propósito: são registro, não insumo — o
- * aplicativo calcula peso, não centragem. Mantê-los nesta lista faria a tela
- * exibir um aviso de pendência mesmo com todos os números disponíveis, o que
- * treinaria o piloto a ignorar o aviso justamente quando ele importa.
+ * Esta lista alimenta o aviso do topo da tela, que trata de PESO. Momento
+ * básico e data de pesagem ficam de fora de propósito:
+ *
+ *   - a data é registro, não insumo de cálculo nenhum;
+ *   - o momento básico é insumo da CENTRAGEM, e a falta dele já é anunciada
+ *     onde importa: o cartão de Centragem se declara indisponível e nomeia o
+ *     campo que falta.
+ *
+ * Repetir a pendência no topo faria a tela avisar duas vezes a mesma coisa, e
+ * avisar demais treina o piloto a ignorar o aviso justamente quando ele importa.
  *
  * Lista vazia significa que todos os cálculos podem ser apresentados.
  */

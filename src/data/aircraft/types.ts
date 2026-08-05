@@ -117,10 +117,11 @@ export interface AircraftRegistration {
   /** Peso básico vazio (Basic Empty Weight). */
   readonly basicEmptyWeightLb: Pending<number>;
   /**
-   * Momento básico da ficha de pesagem.
+   * Momento básico da ficha de pesagem, em lb·pol.
    *
-   * Armazenado como dado permanente, mas NÃO utilizado em cálculo: o escopo do
-   * aplicativo é exclusivamente peso.
+   * É o insumo principal da centragem: dele sai o braço da aeronave vazia, e
+   * sem ele `computeMoment` se declara pendente e o cartão de Centragem fica
+   * indisponível. Não aparece na tela — é número de ficha, não de decisão.
    */
   readonly basicMoment: Pending<number>;
   /** Data da última pesagem, formato ISO (AAAA-MM-DD). */

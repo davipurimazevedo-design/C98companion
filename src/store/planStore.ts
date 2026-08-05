@@ -18,8 +18,8 @@ import { loadDraft, saveDraft } from '../services/storage.ts';
 import {
   convertCargoLoads,
   convertFuelText,
-  EXTRA_CREW_ROLES,
   initialDraft,
+  nextCrewRole,
   type CargoUnit,
   type FuelUnit,
   type PlanDraft,
@@ -136,9 +136,7 @@ export const usePlanStore = create<PlanStore>()((set) => ({
 
   addCrewMember: () =>
     set((state) => {
-      const extras = state.draft.crew.length - 2;
-      const role =
-        EXTRA_CREW_ROLES[extras] ?? `Tripulante ${state.draft.crew.length + 1}`;
+      const role = nextCrewRole(state.draft.crew.map((member) => member.role));
       return {
         draft: {
           ...state.draft,
