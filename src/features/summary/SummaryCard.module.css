@@ -1,0 +1,133 @@
+.card {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+}
+
+.header {
+  padding: 13px var(--sp-4);
+  border-bottom: 1px solid var(--line-soft);
+  background: var(--surface-2);
+}
+
+.title {
+  font-size: var(--size-eyebrow);
+  font-weight: 700;
+  letter-spacing: var(--track-eyebrow);
+  text-transform: uppercase;
+  color: var(--ink);
+}
+
+.rows {
+  padding: 4px var(--sp-4);
+}
+
+.row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 0;
+  border-bottom: 1px solid var(--line-soft);
+}
+
+.row:last-child {
+  border-bottom: 0;
+}
+
+.rowStrong {
+  border-top: 1px solid var(--line);
+}
+
+.rowStrong .label {
+  color: var(--ink);
+  font-weight: 650;
+}
+
+.rowStrong .value {
+  font-size: var(--size-headline);
+}
+
+.icon {
+  flex: none;
+  width: 22px;
+  text-align: center;
+  font-size: 15px;
+}
+
+.label {
+  flex: 1 1 auto;
+  font-size: var(--size-body);
+  color: var(--ink-2);
+}
+
+.value {
+  font-family: var(--font-num);
+  font-variant-numeric: tabular-nums;
+  font-size: 15px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.unit {
+  font-size: var(--size-micro);
+  color: var(--ink-3);
+  margin-left: 3px;
+}
+
+.verdict {
+  display: flex;
+  align-items: flex-start;
+  gap: 11px;
+  padding: 15px var(--sp-4);
+  border-top: 1px solid var(--line);
+  background: var(--surface-2);
+}
+
+.verdictIcon {
+  flex: none;
+  font-size: 19px;
+  line-height: 1.2;
+}
+
+.verdictText {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+}
+
+.headline {
+  font-size: 15px;
+  font-weight: 650;
+  line-height: 1.35;
+}
+
+/* Complementos: cabem mais passageiros? e o combustível, quanto fica? */
+.note {
+  font-size: 13px;
+  color: var(--ink);
+  line-height: 1.4;
+}
+
+.detail {
+  font-size: 12.5px;
+  color: var(--ink-2);
+  margin-top: 2px;
+}
+
+.ok {
+  background: var(--ok-soft);
+}
+
+.warn {
+  background: var(--warn-soft);
+}
+
+.crit {
+  background: var(--crit-soft);
+}
+
+.pending {
+  background: var(--surface-2);
+}

@@ -1,0 +1,155 @@
+.card {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  padding: 11px var(--sp-4) 9px;
+  border-bottom: 1px solid var(--line-soft);
+}
+
+.title {
+  font-size: var(--size-eyebrow);
+  font-weight: 700;
+  letter-spacing: var(--track-eyebrow);
+  text-transform: uppercase;
+  color: var(--ink-2);
+}
+
+.badge {
+  margin-left: auto;
+  padding: 2px 9px;
+  border-radius: var(--radius-pill);
+  font-size: var(--size-small);
+  font-weight: 650;
+  white-space: nowrap;
+}
+
+.ok {
+  color: var(--ok);
+  background: var(--ok-soft);
+}
+.warn {
+  color: var(--warn);
+  background: var(--warn-soft);
+}
+.crit {
+  color: var(--crit);
+  background: var(--crit-soft);
+}
+.pending {
+  color: var(--ink-3);
+  background: var(--surface-2);
+}
+
+.readouts {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1px;
+  margin: var(--sp-3) var(--sp-4) 0;
+  background: var(--line-soft);
+  border: 1px solid var(--line-soft);
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+}
+
+.readouts > div {
+  background: var(--surface-2);
+  padding: 8px 11px;
+}
+
+.readouts dt {
+  font-size: var(--size-micro);
+  text-transform: uppercase;
+  letter-spacing: var(--track-caps);
+  color: var(--ink-3);
+  font-weight: 700;
+}
+
+.readouts dd {
+  margin: 2px 0 0;
+  font-family: var(--font-num);
+  font-variant-numeric: tabular-nums;
+  font-size: 15px;
+  font-weight: 700;
+}
+
+.unit {
+  font-size: var(--size-micro);
+  color: var(--ink-3);
+  font-weight: 600;
+  margin-left: 3px;
+}
+
+.chartWrap {
+  padding: var(--sp-3) var(--sp-4) var(--sp-4);
+}
+
+.chart {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.grid {
+  stroke: var(--line-soft);
+  stroke-width: 1;
+}
+
+.axis {
+  fill: var(--ink-3);
+  font-family: var(--font-num);
+  font-size: 8px;
+}
+
+.warnBand {
+  fill: var(--warn);
+  opacity: 0.16;
+}
+
+.envelope {
+  fill: color-mix(in srgb, var(--accent) 16%, transparent);
+  stroke: var(--accent);
+  stroke-width: 1.5;
+  stroke-linejoin: round;
+}
+
+.crosshair {
+  stroke: var(--ink-3);
+  stroke-width: 1;
+  stroke-dasharray: 3 3;
+}
+
+/* O ponto herda a cor da situação pelas mesmas classes dos rótulos. */
+.point {
+  stroke: var(--surface);
+  stroke-width: 2;
+  transition:
+    cx var(--dur) var(--ease),
+    cy var(--dur) var(--ease);
+}
+
+.point.ok {
+  fill: var(--ok);
+}
+.point.warn {
+  fill: var(--warn);
+}
+.point.crit {
+  fill: var(--crit);
+}
+.point.pending {
+  fill: var(--ink-3);
+}
+
+.note {
+  padding: 0 var(--sp-4) var(--sp-4);
+  font-size: var(--size-small);
+  color: var(--ink-3);
+  line-height: 1.5;
+}

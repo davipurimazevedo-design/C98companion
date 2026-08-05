@@ -1,0 +1,157 @@
+/**
+ * Tokens de design do Planejador C-98.
+ *
+ * Toda cor, tipografia e espaçamento da interface sai daqui. Nenhum componente
+ * deve escrever um valor literal de cor ou fonte — sempre referenciar um token.
+ *
+ * Cores semânticas (--ok / --warn / --crit) representam a situação da aeronave
+ * e são independentes da cor de destaque (--accent), usada apenas em elementos
+ * interativos. Isso evita que a identidade visual compita com o semáforo.
+ */
+
+:root {
+  /* ---------- Neutros (viés azul-aço, não cinza puro) ---------- */
+  --ground: #e9edf2;
+  --surface: #ffffff;
+  --surface-2: #f4f7fa;
+  --line: #d2dae4;
+  --line-soft: #e3e9f0;
+
+  /* ---------- Texto ---------- */
+  --ink: #0d151e;
+  --ink-2: #46586b;
+  --ink-3: #74889c;
+
+  /* ---------- Destaque (interação e foco) ---------- */
+  --accent: #0f5c7a;
+  --accent-ink: #ffffff;
+  --accent-soft: #e2eef3;
+
+  /* ---------- Semântica de situação ---------- */
+  --ok: #16794b;
+  --ok-soft: #e1f2e9;
+  --warn: #9a5a06;
+  --warn-soft: #fbeeda;
+  --crit: #b32418;
+  --crit-soft: #fbe5e2;
+
+  /* ---------- Tipografia ---------- */
+  --font-ui: 'Segoe UI Variable Text', 'Segoe UI', system-ui, -apple-system,
+    'Roboto', sans-serif;
+  --font-num: 'Cascadia Mono', 'Consolas', ui-monospace, 'Roboto Mono', monospace;
+
+  --size-eyebrow: 0.6875rem; /* 11px  — rótulos em caixa alta */
+  --size-micro: 0.65rem; /* 10.4px — unidades e legendas */
+  --size-small: 0.78rem; /* 12.5px */
+  --size-body: 0.875rem; /* 14px */
+  --size-input: 1rem; /* 16px  — mínimo que impede zoom no iOS */
+  --size-figure: 1.0625rem; /* 17px  — números de resumo */
+  --size-headline: 1.1875rem; /* 19px  — peso total */
+
+  --track-eyebrow: 0.13em;
+  --track-caps: 0.1em;
+
+  /* ---------- Espaçamento ---------- */
+  --sp-1: 4px;
+  --sp-2: 8px;
+  --sp-3: 12px;
+  --sp-4: 16px;
+  --sp-5: 24px;
+  --sp-6: 32px;
+
+  /* ---------- Forma ---------- */
+  --radius: 10px;
+  --radius-lg: 12px;
+  --radius-sm: 8px;
+  --radius-pill: 999px;
+
+  /* ---------- Movimento ---------- */
+  --ease: cubic-bezier(0.4, 0, 0.2, 1);
+  --dur-fast: 0.15s;
+  --dur: 0.28s;
+
+  /* ---------- Layout ---------- */
+  --app-width: 520px;
+  --touch-min: 44px;
+
+  color-scheme: light;
+}
+
+/* ---------- Tema escuro: preferência do sistema ---------- */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --ground: #0b1117;
+    --surface: #141c25;
+    --surface-2: #1b2630;
+    --line: #2a3845;
+    --line-soft: #212d39;
+
+    --ink: #e8eff6;
+    --ink-2: #9db0c3;
+    --ink-3: #6d8296;
+
+    --accent: #4fb3d9;
+    --accent-ink: #06222e;
+    --accent-soft: #14313e;
+
+    --ok: #4ed08a;
+    --ok-soft: #113026;
+    --warn: #e9a93c;
+    --warn-soft: #38290d;
+    --crit: #ff7566;
+    --crit-soft: #3b1714;
+
+    color-scheme: dark;
+  }
+}
+
+/* ---------- Tema escolhido pelo usuário: precede a preferência do sistema ---------- */
+:root[data-theme='dark'] {
+  --ground: #0b1117;
+  --surface: #141c25;
+  --surface-2: #1b2630;
+  --line: #2a3845;
+  --line-soft: #212d39;
+
+  --ink: #e8eff6;
+  --ink-2: #9db0c3;
+  --ink-3: #6d8296;
+
+  --accent: #4fb3d9;
+  --accent-ink: #06222e;
+  --accent-soft: #14313e;
+
+  --ok: #4ed08a;
+  --ok-soft: #113026;
+  --warn: #e9a93c;
+  --warn-soft: #38290d;
+  --crit: #ff7566;
+  --crit-soft: #3b1714;
+
+  color-scheme: dark;
+}
+
+:root[data-theme='light'] {
+  --ground: #e9edf2;
+  --surface: #ffffff;
+  --surface-2: #f4f7fa;
+  --line: #d2dae4;
+  --line-soft: #e3e9f0;
+
+  --ink: #0d151e;
+  --ink-2: #46586b;
+  --ink-3: #74889c;
+
+  --accent: #0f5c7a;
+  --accent-ink: #ffffff;
+  --accent-soft: #e2eef3;
+
+  --ok: #16794b;
+  --ok-soft: #e1f2e9;
+  --warn: #9a5a06;
+  --warn-soft: #fbeeda;
+  --crit: #b32418;
+  --crit-soft: #fbe5e2;
+
+  color-scheme: light;
+}

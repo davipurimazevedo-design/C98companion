@@ -1,0 +1,228 @@
+/**
+ * Conversão na fronteira entre a tela e o cálculo.
+ *
+ * O que estes testes protegem: a unidade escolhida para digitar é preferência
+ * de tela e não pode alterar a grandeza física que chega ao domínio. Um erro
+ * aqui produziria um peso errado sem nenhum sinal na interface.
+ */
+
+import { describe, expect, it } from 'vitest';
+
+import { C98 } from '../data/aircraft/index.ts';
+import { kgToLb, lbToLitres, litresToLb } from '../data/conversion.ts';
+import {
+  convertCargoLoads,
+  convertFuelText,
+  initialDraft,
+  toMissionPlan,
+  type PlanDraft,
+} from './draft.ts';
+
+const DENSITY = C98.fuel.referenceDensityLbPerGal ?? 0;
+
+/**
+ * Deriva aceitável ao converter entre unidades.
+ *
+ * O piloto digita números inteiros, e a conversão arredonda para inteiro na
+ * unidade de destino. Uma ida e volta pode portanto deslocar até cerca de 1 LB
+ * — 2.224 LB viram 1.257 L, que voltam como 2.225 LB.
+ *
+ * Um libra sobre 8.750 é irrelevante operacionalmente, mas o teste mede a
+ * deriva explicitamente em vez de escondê-la numa tolerância vaga: se ela
+ * crescer, é sinal de que algo mudou na conversão.
+ */
+const DERIVA_LB = 1;
+
+function esperaProximo(atual: number, esperado: number, tolerancia: number) {
+  expect(Math.abs(atual - esperado)).toBeLessThanOrEqual(tolerancia);
+}
+
+function draftWith(overrides: Partial<PlanDraft>): PlanDraft {
+  return { ...initialDraft('fab-2720'), ...overrides };
+}
+
+describe('combustível digitado em litros', () => {
+  it('converte para libras usando a densidade de referência', () => {
+    const plan = toMissionPlan(
+      draftWith({ fuel: '1270', fuelUnit: 'L' }),
+      DENSITY,
+    );
+    /* 1.270 L é a capacidade total dos tanques: 2.248 LB. */
+    expect(plan.fuelLb).toBeCloseTo(2248, 0);
+  });
+
+  it('digitar em litros ou em libras dá o mesmo peso', () => {
+    const emLitros = toMissionPlan(
+      draftWith({ fuel: '1257', fuelUnit: 'L' }),
+      DENSITY,
+    );
+    const emLibras = toMissionPlan(
+      draftWith({ fuel: '2224', fuelUnit: 'LB' }),
+      DENSITY,
+    );
+
+    /* 1.257 L são os 332 galões utilizáveis; a diferença é só o arredondamento
+       do próprio número digitado. */
+    esperaProximo(emLitros.fuelLb, emLibras.fuelLb, DERIVA_LB);
+  });
+
+  it('sem densidade cadastrada a leitura em litros não vira peso', () => {
+    const plan = toMissionPlan(draftWith({ fuel: '1270', fuelUnit: 'L' }), null);
+    expect(plan.fuelLb).toBe(0);
+  });
+
+  it('em libras a densidade é irrelevante', () => {
+    const plan = toMissionPlan(draftWith({ fuel: '2224', fuelUnit: 'LB' }), null);
+    expect(plan.fuelLb).toBe(2224);
+  });
+});
+
+describe('carga digitada em quilogramas', () => {
+  it('converte cada posição para libras', () => {
+    const plan = toMissionPlan(
+      draftWith({
+        cargoUnit: 'kg',
+        positionLoads: { 'pod-a': '100', 'zona-2': '500' },
+      }),
+      DENSITY,
+    );
+
+    expect(plan.positionLoads['pod-a']).toBeCloseTo(kgToLb(100), 6);
+    expect(plan.positionLoads['zona-2']).toBeCloseTo(kgToLb(500), 6);
+  });
+
+  it('aceita carga acima do teto de peso de uma pessoa', () => {
+    /* 3.400 LB de carga de cabine são 1.542 kg — muito além dos 999 kg que
+       bastam para um ocupante. O teto de carga é outro. */
+    const plan = toMissionPlan(
+      draftWith({ cargoUnit: 'kg', positionLoads: { 'zona-2': '1542' } }),
+      DENSITY,
+    );
+
+    expect(plan.positionLoads['zona-2']).toBeCloseTo(3400, 0);
+  });
+
+  it('em libras o valor passa direto', () => {
+    const plan = toMissionPlan(
+      draftWith({ cargoUnit: 'LB', positionLoads: { 'pod-a': '230' } }),
+      DENSITY,
+    );
+    expect(plan.positionLoads['pod-a']).toBe(230);
+  });
+});
+
+describe('troca de unidade preserva o carregamento', () => {
+  it('reescreve o combustível em vez de apagar', () => {
+    expect(convertFuelText('2224', 'LB', 'L', DENSITY)).toBe('1257');
+    /* A volta não recupera o número exato: 1.257 L são 2.224,83 LB. É a deriva
+       de arredondar para inteiro nas duas pontas. */
+    expect(convertFuelText('1257', 'L', 'LB', DENSITY)).toBe('2225');
+  });
+
+  it('reescreve todas as posições de carga de uma vez', () => {
+    const emKg = convertCargoLoads(
+      { 'pod-a': '230', 'pod-b': '310' },
+      'LB',
+      'kg',
+    );
+    expect(emKg).toEqual({ 'pod-a': '104', 'pod-b': '141' });
+
+    const devolta = convertCargoLoads(emKg, 'kg', 'LB');
+    expect(devolta).toEqual({ 'pod-a': '229', 'pod-b': '311' });
+  });
+
+  it('campo vazio continua vazio', () => {
+    expect(convertFuelText('', 'LB', 'L', DENSITY)).toBe('');
+    expect(convertCargoLoads({ 'pod-a': '' }, 'LB', 'kg')).toEqual({
+      'pod-a': '',
+    });
+  });
+
+  it('trocar para a mesma unidade não mexe no texto', () => {
+    expect(convertFuelText('1257', 'L', 'L', DENSITY)).toBe('1257');
+    expect(convertCargoLoads({ 'pod-a': '230' }, 'LB', 'LB')).toEqual({
+      'pod-a': '230',
+    });
+  });
+
+  it('sem densidade o combustível não é reescrito', () => {
+    expect(convertFuelText('2224', 'LB', 'L', null)).toBe('2224');
+  });
+
+  it('encher os tanques em litros não estoura a capacidade', () => {
+    /* O atalho "Tanques cheios" arredonda para baixo justamente para não cair
+       1 LB acima do utilizável e disparar alerta por artefato de conversão. */
+    const utilizavelLb = C98.fuel.usableCapacityLb ?? 0;
+    const litrosCheios = Math.floor(lbToLitres(utilizavelLb, DENSITY));
+
+    const plan = toMissionPlan(
+      draftWith({ fuel: String(litrosCheios), fuelUnit: 'L' }),
+      DENSITY,
+    );
+
+    expect(plan.fuelLb).toBeLessThanOrEqual(utilizavelLb);
+    esperaProximo(plan.fuelLb, utilizavelLb, DERIVA_LB);
+  });
+});
+
+describe('unidade de tela não contamina o cálculo', () => {
+  it('o mesmo carregamento físico produz o mesmo plano', () => {
+    const emLb = toMissionPlan(
+      draftWith({
+        fuel: '2224',
+        fuelUnit: 'LB',
+        cargoUnit: 'LB',
+        positionLoads: { 'pod-a': '230' },
+      }),
+      DENSITY,
+    );
+
+    const emMetrico = toMissionPlan(
+      draftWith({
+        fuel: convertFuelText('2224', 'LB', 'L', DENSITY),
+        fuelUnit: 'L',
+        cargoUnit: 'kg',
+        positionLoads: convertCargoLoads({ 'pod-a': '230' }, 'LB', 'kg'),
+      }),
+      DENSITY,
+    );
+
+    esperaProximo(emMetrico.fuelLb, emLb.fuelLb, DERIVA_LB);
+    esperaProximo(
+      emMetrico.positionLoads['pod-a'] ?? 0,
+      emLb.positionLoads['pod-a'] ?? 0,
+      DERIVA_LB,
+    );
+  });
+
+  it('as pessoas continuam em quilogramas, sem seletor', () => {
+    const plan = toMissionPlan(
+      draftWith({
+        cargoUnit: 'kg',
+        crew: [{ id: 'p', role: 'Piloto', weight: '80' }],
+        passengerLoads: { p45: '90' },
+      }),
+      DENSITY,
+    );
+
+    expect(plan.crew[0]?.weightKg).toBe(80);
+    expect(plan.passengerLoads['p45']).toBe(90);
+  });
+});
+
+describe('coerência da tabela de combustível', () => {
+  it('a capacidade total confere entre libras e litros', () => {
+    const lb = C98.fuel.totalCapacityLb ?? 0;
+    const litros = C98.fuel.totalCapacityL ?? 0;
+    expect(Math.round(litresToLb(litros, DENSITY))).toBe(lb);
+  });
+
+  it('o total supera o utilizável pelo combustível não utilizável', () => {
+    const total = C98.fuel.totalCapacityLb ?? 0;
+    const utilizavel = C98.fuel.usableCapacityLb ?? 0;
+    expect(total).toBeGreaterThan(utilizavel);
+    /* Os ~24 LB de diferença já estão no peso básico da aeronave, e por isso o
+       limite do cálculo continua sendo o utilizável. */
+    expect(total - utilizavel).toBeCloseTo(24, 0);
+  });
+});

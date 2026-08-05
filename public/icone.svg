@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="Planejador C-98">
+  <rect width="512" height="512" rx="96" fill="#0F5C7A" />
+  <!-- Balança: o app pesa, não pilota. -->
+  <g fill="none" stroke="#FFFFFF" stroke-width="26" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M256 132v268" />
+    <path d="M132 188h248" />
+    <path d="M132 188 84 300h96z" />
+    <path d="M380 188l-48 112h96z" />
+    <path d="M186 400h140" />
+  </g>
+  <circle cx="256" cy="132" r="24" fill="#FFFFFF" />
+</svg>

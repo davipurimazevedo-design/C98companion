@@ -1,0 +1,17 @@
+import { StrictMode } from 'react';
+import { createRoot } from 'react-dom/client';
+
+import './ui/tokens/tokens.css';
+import './ui/styles/global.css';
+import { App } from './app/App.tsx';
+
+const container = document.getElementById('root');
+if (!container) {
+  throw new Error('Elemento #root não encontrado em index.html.');
+}
+
+createRoot(container).render(
+  <StrictMode>
+    <App />
+  </StrictMode>,
+);

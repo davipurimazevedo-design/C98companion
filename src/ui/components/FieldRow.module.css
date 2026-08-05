@@ -1,0 +1,79 @@
+.row {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  padding: 7px 0;
+  border-bottom: 1px solid var(--line-soft);
+}
+
+.row:last-child {
+  border-bottom: 0;
+}
+
+.labels {
+  flex: 1 1 auto;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.label {
+  font-size: var(--size-body);
+  color: var(--ink);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.hint {
+  font-size: var(--size-small);
+  color: var(--ink-3);
+}
+
+.error {
+  font-size: var(--size-small);
+  color: var(--crit);
+}
+
+.index {
+  flex: none;
+  width: 24px;
+  height: 24px;
+  display: grid;
+  place-items: center;
+  border-radius: 6px;
+  background: var(--surface-2);
+  border: 1px solid var(--line-soft);
+  font-family: var(--font-num);
+  font-size: var(--size-eyebrow);
+  font-weight: 700;
+  color: var(--ink-2);
+}
+
+.remove {
+  flex: none;
+  position: relative;
+  width: 34px;
+  height: 34px;
+  display: grid;
+  place-items: center;
+  color: var(--ink-3);
+  border-radius: var(--radius-sm);
+  font-size: 17px;
+  line-height: 1;
+  transition:
+    color var(--dur-fast) var(--ease),
+    background-color var(--dur-fast) var(--ease);
+}
+
+/* Amplia a área tocável para o mínimo de 44 px sem engordar a linha. */
+.remove::after {
+  content: '';
+  position: absolute;
+  inset: calc((34px - var(--touch-min)) / 2);
+}
+
+.remove:hover {
+  color: var(--crit);
+  background: var(--crit-soft);
+}

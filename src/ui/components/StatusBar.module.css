@@ -1,0 +1,90 @@
+.wrapper {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+}
+
+.bar {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+  padding: 10px var(--sp-4);
+  background: var(--surface);
+  border-bottom: 1px solid var(--line);
+}
+
+.dot {
+  flex: none;
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: var(--ink-3);
+}
+
+.tail {
+  font-family: var(--font-num);
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  white-space: nowrap;
+}
+
+.metrics {
+  margin-left: auto;
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  font-family: var(--font-num);
+  font-variant-numeric: tabular-nums;
+}
+
+.total {
+  font-size: var(--size-figure);
+  font-weight: 700;
+}
+
+.unit {
+  font-size: var(--size-micro);
+  color: var(--ink-3);
+  margin-left: 2px;
+}
+
+.percent {
+  font-size: var(--size-small);
+  color: var(--ink-2);
+}
+
+.track {
+  height: 3px;
+  background: var(--line-soft);
+}
+
+.fill {
+  display: block;
+  height: 100%;
+  background: var(--ink-3);
+  transition:
+    width var(--dur) var(--ease),
+    background-color var(--dur) var(--ease);
+}
+
+/* Níveis da situação. Aplicados à barra e à trilha. */
+.ok .dot,
+.ok .fill {
+  background: var(--ok);
+}
+
+.warn .dot,
+.warn .fill {
+  background: var(--warn);
+}
+
+.crit .dot,
+.crit .fill {
+  background: var(--crit);
+}
+
+.pending .dot,
+.pending .fill {
+  background: var(--ink-3);
+}
