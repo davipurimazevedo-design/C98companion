@@ -1,0 +1,210 @@
+.frame {
+  position: relative;
+  height: 144px;
+  margin: var(--sp-2) 0 var(--sp-1);
+}
+
+/* Perfil da fuselagem. Ilustrativo — quem posiciona é a estação. */
+.fuselage {
+  position: absolute;
+  inset: 0 0 88px 0;
+  border: 1.5px solid var(--line);
+  border-radius: 26px 10px 10px 26px;
+  background: var(--surface-2);
+}
+
+/* Casco do cargo pod, sob a barriga. */
+.podShell {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 46px;
+  height: 28px;
+}
+
+.zone,
+.pod {
+  position: absolute;
+  display: grid;
+  place-items: center;
+  border: 1px solid var(--line-soft);
+  background: var(--surface);
+  overflow: hidden;
+  transition:
+    background-color var(--dur-fast) var(--ease),
+    border-color var(--dur-fast) var(--ease);
+}
+
+.zone {
+  top: 6px;
+  bottom: 6px;
+  border-radius: var(--radius-sm);
+}
+
+.pod {
+  top: 0;
+  bottom: 0;
+  border-radius: 0 0 var(--radius-sm) var(--radius-sm);
+}
+
+/* Primeiro e último compartimento fecham as pontas do pod. */
+.pod:first-of-type {
+  border-radius: 12px 0 0 12px;
+}
+
+.pod:last-of-type {
+  border-radius: 0 12px 12px 0;
+}
+
+.zone:focus-visible,
+.pod:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
+  z-index: 2;
+}
+
+.loaded {
+  border-color: color-mix(in srgb, var(--accent) 45%, transparent);
+  background: var(--accent-soft);
+}
+
+.over {
+  border-color: var(--crit);
+  background: var(--crit-soft);
+}
+
+.selected {
+  box-shadow: 0 0 0 2px var(--accent);
+  z-index: 1;
+}
+
+.cellLabel {
+  font-family: var(--font-num);
+  font-variant-numeric: tabular-nums;
+  font-size: var(--size-micro);
+  font-weight: 700;
+  color: var(--ink-3);
+  white-space: nowrap;
+  pointer-events: none;
+}
+
+.loaded .cellLabel {
+  color: var(--accent);
+}
+
+.over .cellLabel {
+  color: var(--crit);
+}
+
+/* Marca do CG na escala da aeronave: fina, sobre a fuselagem, para dizer ONDE
+   o centro de gravidade cai ao longo do avião. */
+.cgTick {
+  position: absolute;
+  top: -3px;
+  bottom: -3px;
+  width: 2px;
+  transform: translateX(-1px);
+  border-radius: 1px;
+  transition: left var(--dur) var(--ease);
+}
+
+/* ---------- Régua do centro de gravidade, ampliada ---------- */
+
+.cgRuler {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 44px;
+  padding-top: 6px;
+  border-top: 1px solid var(--line-soft);
+}
+
+.cgCaption {
+  display: block;
+  font-size: var(--size-micro);
+  letter-spacing: var(--track-caps);
+  text-transform: uppercase;
+  font-weight: 700;
+  color: var(--ink-3);
+}
+
+.cgTrack {
+  position: relative;
+  height: 12px;
+  margin-top: 3px;
+}
+
+/* Faixa permitida para o peso atual: o limite dianteiro anda com o peso, o
+   traseiro é constante. */
+.cgRange {
+  position: absolute;
+  top: 2px;
+  height: 8px;
+  border-radius: var(--radius-pill);
+  background: color-mix(in srgb, var(--ok) 22%, transparent);
+  border: 1px solid color-mix(in srgb, var(--ok) 40%, transparent);
+}
+
+.cgMark {
+  position: absolute;
+  top: -2px;
+  height: 16px;
+  width: 2px;
+  transform: translateX(-1px);
+  background: var(--ink-2);
+  transition: left var(--dur) var(--ease);
+}
+
+.cgValue {
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  padding-top: 1px;
+  font-family: var(--font-num);
+  font-variant-numeric: tabular-nums;
+  font-size: var(--size-micro);
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+/* Limites publicados, nas pontas da faixa. */
+.cgLimits {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 1px;
+  font-family: var(--font-num);
+  font-variant-numeric: tabular-nums;
+  font-size: var(--size-micro);
+  color: var(--ink-3);
+}
+
+.cgOk {
+  background: var(--ok);
+}
+.cgOk .cgValue {
+  color: var(--ok);
+}
+
+.cgWarn {
+  background: var(--warn);
+}
+.cgWarn .cgValue {
+  color: var(--warn);
+}
+
+.cgCrit {
+  background: var(--crit);
+}
+.cgCrit .cgValue {
+  color: var(--crit);
+}
+
+.cgEmpty {
+  display: flex;
+  align-items: center;
+  height: 32px;
+  font-size: var(--size-micro);
+  color: var(--ink-3);
+}

@@ -13,10 +13,10 @@
 import type { AircraftProfile, LoadPosition } from '../../data/aircraft/types.ts';
 import { CREW_ARM_IN } from '../../data/aircraft/c98.arms.ts';
 import type { FuelMomentRow } from '../../data/aircraft/c98.fuelMoment.ts';
-import type { PassengerStation } from '../../data/aircraft/c98.seats.ts';
 import { isPresent } from '../../data/pending.ts';
 import type { MissionPlan } from '../models/plan.ts';
 import { pending, ready, type Outcome } from './outcome.ts';
+import type { SeatSlot } from './seats.ts';
 import { kgToLb } from './units.ts';
 
 /** Uma linha do cálculo de momento, espelhando o manifesto do manual. */
@@ -104,7 +104,7 @@ export function computeMoment(
   plan: MissionPlan,
   profile: AircraftProfile,
   positions: readonly LoadPosition[],
-  stations: readonly PassengerStation[],
+  seats: readonly SeatSlot[],
 ): Outcome<MomentReport> {
   const { basicEmptyWeightLb, basicMoment } = profile.registration;
 
@@ -146,17 +146,20 @@ export function computeMoment(
     });
   }
 
-  /* 5 — Passageiros traseiros, por estação de assento. */
-  for (const station of stations) {
-    const weightKg = plan.passengerLoads[station.id] ?? 0;
+  /* 5 — Passageiros traseiros, assento a assento.
+     Assentos da mesma estação têm o mesmo braço, então somar por assento dá
+     exatamente o mesmo momento que somar por estação — só permite lançar o
+     peso real de cada pessoa. */
+  for (const seat of seats) {
+    const weightKg = plan.passengerLoads[seat.id] ?? 0;
     if (weightKg === 0) continue;
 
     const weightLb = kgToLb(weightKg);
     lines.push({
-      label: station.label,
+      label: seat.label,
       weightLb,
-      armIn: station.armIn,
-      moment1000: moment1000Of(weightLb, station.armIn),
+      armIn: seat.armIn,
+      moment1000: moment1000Of(weightLb, seat.armIn),
     });
   }
 

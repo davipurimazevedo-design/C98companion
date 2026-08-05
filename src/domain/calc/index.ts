@@ -10,6 +10,7 @@
  */
 
 import {
+  cabinSeatsFor,
   describeMissingData,
   passengerStationsFor,
   positionsFor,
@@ -33,6 +34,7 @@ import {
   computePassengerCapacity,
   type PassengerCapacity,
 } from './passengers.ts';
+import { resolveSeats, type SeatSlot } from './seats.ts';
 import { deriveSituation, type SituationLevel } from './status.ts';
 import { computeTotals, type LoadTotals } from './totals.ts';
 import { buildVerdict, type Verdict } from './verdict.ts';
@@ -40,6 +42,8 @@ import { buildVerdict, type Verdict } from './verdict.ts';
 export interface PlanResult {
   /** Posições realmente disponíveis nesta aeronave. */
   readonly positions: readonly LoadPosition[];
+  /** Assentos de passageiro desta aeronave, com braço e lado resolvidos. */
+  readonly seats: readonly SeatSlot[];
   /** Somatórios do carregamento. Sempre disponíveis. */
   readonly totals: LoadTotals;
   /** Peso total, disponível, percentual e margem. */
@@ -68,6 +72,10 @@ export function computePlanResult(
   profile: AircraftProfile,
 ): PlanResult {
   const positions = positionsFor(profile);
+  const seatSlots = resolveSeats(
+    cabinSeatsFor(profile),
+    passengerStationsFor(profile),
+  );
   const totals = computeTotals(plan, positions);
   const availability = computeAvailability(totals, profile);
   const additionalFuel = computeAdditionalFuel(totals, profile);
@@ -87,8 +95,7 @@ export function computePlanResult(
       : Math.max(0, plan.passengerCount - seats);
 
   /* Centragem: só existe quando o momento básico da matrícula está cadastrado. */
-  const stations = passengerStationsFor(profile);
-  const moment = computeMoment(plan, profile, positions, stations);
+  const moment = computeMoment(plan, profile, positions, seatSlots);
   const cg = isReady(moment)
     ? computeCg(moment.value.takeoffWeightLb, moment.value.takeoffMoment1000)
     : null;
@@ -103,6 +110,7 @@ export function computePlanResult(
 
   return {
     positions,
+    seats: seatSlots,
     totals,
     availability,
     additionalFuel,
@@ -135,6 +143,8 @@ export function computePlanResult(
 
 export { limitOf } from './limits.ts';
 export { computePassengerCapacity, distributeBySeats } from './passengers.ts';
+export { resolveSeats, stationLoadKg } from './seats.ts';
+export type { SeatSlot } from './seats.ts';
 export { computeMoment, fuelMoment1000 } from './moment.ts';
 export {
   computeCg,

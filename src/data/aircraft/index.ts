@@ -6,13 +6,15 @@
  * quebra nenhum consumidor.
  */
 
-import { missingLabels } from '../pending.ts';
+import { isPresent, missingLabels } from '../pending.ts';
 import { C98_FUEL } from './c98.fuel.ts';
 import { C98_FUEL_MOMENTS } from './c98.fuelMoment.ts';
 import { C98_LIMITS } from './c98.limits.ts';
 import { C98_POSITIONS } from './c98.positions.ts';
 import {
+  C98_CABIN_SEATS,
   C98_PASSENGER_STATIONS,
+  type CabinSeat,
   type PassengerStation,
 } from './c98.seats.ts';
 import { DEFAULT_AIRCRAFT_ID, FLEET } from './fleet.ts';
@@ -74,6 +76,23 @@ export function passengerStationsFor(
   profile: AircraftProfile,
 ): readonly PassengerStation[] {
   return C98_PASSENGER_STATIONS[profile.registration.seatingArrangement];
+}
+
+/** Assentos individuais desta aeronave, conforme o arranjo instalado. */
+export function cabinSeatsFor(profile: AircraftProfile): readonly CabinSeat[] {
+  return C98_CABIN_SEATS[profile.registration.seatingArrangement];
+}
+
+/**
+ * Se o mapa da cabine pode ser desenhado para esta aeronave.
+ *
+ * Exige o lado de TODOS os assentos confirmado. Desenhar metade dos assentos
+ * seria pior do que não desenhar nenhum: o piloto contaria os lugares no
+ * desenho e chegaria a um número que não é o da aeronave.
+ */
+export function canDrawCabinMap(profile: AircraftProfile): boolean {
+  const seats = cabinSeatsFor(profile);
+  return seats.length > 0 && seats.every((seat) => isPresent(seat.side));
 }
 
 /**

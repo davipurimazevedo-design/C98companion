@@ -1,7 +1,12 @@
 import { describe, expect, it } from 'vitest';
 
+import {
+  C98_CABIN_SEATS,
+  C98_PASSENGER_STATIONS,
+} from '../../data/aircraft/c98.seats.ts';
 import { AVERAGE_PASSENGER_KG } from '../../data/operational.ts';
-import { computePassengerCapacity } from './passengers.ts';
+import { computePassengerCapacity, distributeBySeats } from './passengers.ts';
+import { resolveSeats } from './seats.ts';
 import { kgToLb } from './units.ts';
 
 const averageLb = kgToLb(AVERAGE_PASSENGER_KG); // 90 kg ≈ 198,42 LB
@@ -102,5 +107,34 @@ describe('capacidade limitada pelos assentos', () => {
 
     expect(capacity.freeSeats).toBe(0);
     expect(capacity.count).toBe(0);
+  });
+});
+
+describe('distribuição pela média', () => {
+  const seats = resolveSeats(
+    C98_CABIN_SEATS.escalonada,
+    C98_PASSENGER_STATIONS.escalonada,
+  );
+
+  it('reparte igualmente entre os assentos', () => {
+    const loads = distributeBySeats(450, seats);
+    /* 450 kg em nove assentos: 50 kg em cada. */
+    expect(Object.keys(loads)).toHaveLength(9);
+    expect(loads['s4']).toBeCloseTo(50, 6);
+    expect(loads['s11']).toBeCloseTo(50, 6);
+  });
+
+  it('a soma fecha com o total mesmo com sobra de arredondamento', () => {
+    /* 100 kg em nove assentos não dá número redondo: o último absorve a sobra
+       para que a soma continue sendo exatamente o que o piloto pediu. */
+    const loads = distributeBySeats(100, seats);
+    const total = Object.values(loads).reduce((sum, kg) => sum + kg, 0);
+    expect(total).toBeCloseTo(100, 6);
+  });
+
+  it('nada a distribuir devolve vazio', () => {
+    expect(distributeBySeats(0, seats)).toEqual({});
+    expect(distributeBySeats(-10, seats)).toEqual({});
+    expect(distributeBySeats(100, [])).toEqual({});
   });
 });

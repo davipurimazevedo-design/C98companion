@@ -4,6 +4,26 @@
   margin: 8px 0 6px;
 }
 
+/* Bloco do compartimento selecionado no desenho. */
+.editor {
+  margin: var(--sp-1) 0 var(--sp-2);
+  padding: 0 10px;
+  border: 1px solid color-mix(in srgb, var(--accent) 30%, transparent);
+  border-radius: var(--radius-sm);
+  background: var(--accent-soft);
+}
+
+/* Mesma altura do bloco de edição, para que selecionar não empurre o desenho. */
+.pickHint {
+  display: flex;
+  align-items: center;
+  min-height: 58px;
+  padding: 0 2px;
+  font-size: var(--size-small);
+  color: var(--ink-3);
+  line-height: 1.45;
+}
+
 .unitRow {
   display: flex;
   justify-content: flex-end;

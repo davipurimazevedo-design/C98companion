@@ -23,8 +23,13 @@ const KEY = 'planejador-c98:rascunho';
 /**
  * Versão do formato salvo. Incrementar sempre que a forma de `PlanDraft` mudar
  * de modo incompatível — rascunhos de versões anteriores são descartados.
+ *
+ * A versão 6 mudou o peso dos passageiros de estação (`p45`, valendo dois
+ * assentos) para assento (`s4`, `s5`). Ler um rascunho da versão 5 colocaria o
+ * peso de dois passageiros num assento só, deslocando a centragem em silêncio.
+ * Descartar e recomeçar é o comportamento correto.
  */
-const VERSION = 5;
+const VERSION = 6;
 
 interface Envelope {
   readonly version: number;

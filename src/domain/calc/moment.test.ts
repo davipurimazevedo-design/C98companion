@@ -16,9 +16,16 @@ import type { AircraftProfile } from '../../data/aircraft/types.ts';
 import { kgToLb, lbToKg } from './units.ts';
 import { computeMoment, fuelMoment1000 } from './moment.ts';
 import { makePlan } from './__fixtures__/plan.ts';
-import { C98_PASSENGER_STATIONS } from '../../data/aircraft/c98.seats.ts';
+import { resolveSeats } from './seats.ts';
+import {
+  C98_CABIN_SEATS,
+  C98_PASSENGER_STATIONS,
+} from '../../data/aircraft/c98.seats.ts';
 
-const STATIONS = C98_PASSENGER_STATIONS.escalonada;
+const SEATS = resolveSeats(
+  C98_CABIN_SEATS.escalonada,
+  C98_PASSENGER_STATIONS.escalonada,
+);
 
 /** A aeronave do exemplo: 4.575 LB de peso básico, momento 846.500 lb·pol. */
 const SAMPLE_AIRCRAFT: AircraftProfile = {
@@ -89,7 +96,7 @@ describe('tabela de momento do combustível (página 6-49)', () => {
 });
 
 describe('exemplo resolvido do manual, página 6-55', () => {
-  const outcome = computeMoment(samplePlan, SAMPLE_AIRCRAFT, C98.positions, STATIONS);
+  const outcome = computeMoment(samplePlan, SAMPLE_AIRCRAFT, C98.positions, SEATS);
 
   it('o cálculo está disponível', () => {
     expect(outcome.status).toBe('ready');
@@ -140,11 +147,11 @@ describe('exemplo resolvido do manual, página 6-55', () => {
   });
 });
 
-describe('momento dos passageiros por estação', () => {
+describe('momento dos passageiros por assento', () => {
   it('usa o braço da estação em que cada grupo está sentado', () => {
     /* 90 kg no assento 3 (braço 189,9) e 90 kg no assento 11 (braço 261,9). */
-    const plan = makePlan({ passengerLoads: { p3: 90, p11: 90 } });
-    const outcome = computeMoment(plan, SAMPLE_AIRCRAFT, C98.positions, STATIONS);
+    const plan = makePlan({ passengerLoads: { s3: 90, s11: 90 } });
+    const outcome = computeMoment(plan, SAMPLE_AIRCRAFT, C98.positions, SEATS);
 
     expect(outcome.status).toBe('ready');
     if (outcome.status !== 'ready') return;
@@ -161,16 +168,16 @@ describe('momento dos passageiros por estação', () => {
 
   it('o mesmo peso à frente ou atrás muda o momento', () => {
     const frente = computeMoment(
-      makePlan({ passengerLoads: { p45: 180 } }),
+      makePlan({ passengerLoads: { s4: 180 } }),
       SAMPLE_AIRCRAFT,
       C98.positions,
-      STATIONS,
+      SEATS,
     );
     const fundo = computeMoment(
-      makePlan({ passengerLoads: { p11: 180 } }),
+      makePlan({ passengerLoads: { s11: 180 } }),
       SAMPLE_AIRCRAFT,
       C98.positions,
-      STATIONS,
+      SEATS,
     );
 
     expect(frente.status).toBe('ready');
@@ -183,9 +190,44 @@ describe('momento dos passageiros por estação', () => {
     );
   });
 
+  /**
+   * Trava do refactor de estação para assento.
+   *
+   * Assentos 4 e 5 compartilham a estação 173,9. Lançar 180 kg num deles ou
+   * 90 kg em cada um tem de dar exatamente o mesmo momento — do contrário a
+   * mudança de granularidade da tela teria alterado a física.
+   */
+  it('assentos da mesma estação somam como o grupo publicado', () => {
+    const juntos = computeMoment(
+      makePlan({ passengerLoads: { s4: 180 } }),
+      SAMPLE_AIRCRAFT,
+      C98.positions,
+      SEATS,
+    );
+    const separados = computeMoment(
+      makePlan({ passengerLoads: { s4: 90, s5: 90 } }),
+      SAMPLE_AIRCRAFT,
+      C98.positions,
+      SEATS,
+    );
+
+    expect(juntos.status).toBe('ready');
+    expect(separados.status).toBe('ready');
+    if (juntos.status !== 'ready' || separados.status !== 'ready') return;
+
+    expect(separados.value.rampWeightLb).toBeCloseTo(
+      juntos.value.rampWeightLb,
+      6,
+    );
+    expect(separados.value.rampMoment1000).toBeCloseTo(
+      juntos.value.rampMoment1000,
+      6,
+    );
+  });
+
   it('nenhum item fica sem momento apurável', () => {
-    const plan = makePlan({ passengerLoads: { p6: 200 }, fuelLb: 500 });
-    const outcome = computeMoment(plan, SAMPLE_AIRCRAFT, C98.positions, STATIONS);
+    const plan = makePlan({ passengerLoads: { s6: 200 }, fuelLb: 500 });
+    const outcome = computeMoment(plan, SAMPLE_AIRCRAFT, C98.positions, SEATS);
 
     expect(outcome.status).toBe('ready');
     if (outcome.status !== 'ready') return;
@@ -197,7 +239,7 @@ describe('momento dos passageiros por estação', () => {
       model: C98,
       registration: { ...SAMPLE_AIRCRAFT.registration, basicMoment: null },
     };
-    const outcome = computeMoment(samplePlan, semFicha, C98.positions, STATIONS);
+    const outcome = computeMoment(samplePlan, semFicha, C98.positions, SEATS);
 
     expect(outcome.status).toBe('pending');
     if (outcome.status === 'pending') {

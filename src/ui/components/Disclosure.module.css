@@ -1,0 +1,53 @@
+/* Repete a forma de um cabeçalho de grupo comum, para que abrir e fechar não
+   mude o desenho da seção. */
+.header {
+  display: flex;
+  align-items: baseline;
+  gap: var(--sp-2);
+  width: 100%;
+  margin-top: var(--sp-3);
+  padding: 6px 0 4px;
+  border-bottom: 1px solid var(--line);
+  border-radius: 0;
+  text-align: left;
+}
+
+.header:not(:disabled):hover .title {
+  color: var(--ink-2);
+}
+
+.header:disabled {
+  cursor: default;
+}
+
+.header:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.title {
+  font-size: var(--size-micro);
+  font-weight: 700;
+  letter-spacing: var(--track-caps);
+  text-transform: uppercase;
+  color: var(--ink-3);
+}
+
+.total {
+  margin-left: auto;
+  font-family: var(--font-num);
+  font-variant-numeric: tabular-nums;
+  font-size: var(--size-small);
+  font-weight: 700;
+  color: var(--ink-2);
+}
+
+.over {
+  color: var(--crit);
+}
+
+.chevron {
+  flex: none;
+  font-size: 10px;
+  color: var(--ink-3);
+}

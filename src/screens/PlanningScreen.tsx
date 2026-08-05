@@ -6,21 +6,24 @@
  * consequência do preenchimento, não de uma ação à parte.
  */
 
-import { useMemo } from 'react';
+import { useMemo, useRef } from 'react';
 
 import {
   C98,
   DEFAULT_AIRCRAFT_ID,
+  canDrawCabinMap,
   getProfile,
-  passengerStationsFor,
 } from '../data/aircraft/index.ts';
 import { AVERAGE_PASSENGER_KG } from '../data/operational.ts';
+import { isPresent } from '../data/pending.ts';
 import {
   computePlanResult,
   distributeBySeats,
   isReady,
+  limitOf,
   valueOrNull,
 } from '../domain/calc/index.ts';
+import type { ZoneCell } from '../features/aircraftMap/TopView.tsx';
 import { AircraftSection } from '../features/aircraft/AircraftSection.tsx';
 import { CargoSection } from '../features/cargo/CargoSection.tsx';
 import { CgCard } from '../features/cg/CgCard.tsx';
@@ -67,15 +70,14 @@ export function PlanningScreen() {
     () => toMissionPlan(draft, fuelDensity),
     [draft, fuelDensity],
   );
-  const stations = useMemo(
-    () => (profile ? passengerStationsFor(profile) : []),
-    [profile],
-  );
 
   const result = useMemo(
     () => (profile ? computePlanResult(plan, profile) : null),
     [plan, profile],
   );
+
+  /* Tocar um assento dianteiro no mapa leva à seção onde ele é lançado. */
+  const crewRef = useRef<HTMLDivElement>(null);
 
   if (!profile || !result) {
     return (
@@ -100,6 +102,39 @@ export function PlanningScreen() {
       reset();
     }
   };
+
+  /* Zonas do piso desenhadas em segundo plano no mapa da cabine. Uma zona sem
+     as estações cadastradas simplesmente não é desenhada — não há como saber
+     onde ela cai. */
+  const zoneCells: ZoneCell[] = result.positions
+    .filter((position) => position.group === 'cabine')
+    .flatMap((position) => {
+      const { fromIn, toIn } = position;
+      if (!isPresent(fromIn) || !isPresent(toIn)) return [];
+
+      const loadedLb = plan.positionLoads[position.id] ?? 0;
+      const limit = limitOf(position, plan.cargoRestraint);
+
+      return [
+        {
+          id: position.id,
+          short: position.label.replace(/\D+/g, ''),
+          label: position.label,
+          fromIn,
+          toIn,
+          loadedLb,
+          over: limit !== null && loadedLb > limit,
+        },
+      ];
+    });
+
+  /* Assentos 1 e 2 do desenho: os dois primeiros da tripulação, que é onde o
+     manual coloca piloto e copiloto. Tripulantes além disso entram no cálculo
+     pelo mesmo braço, mas não têm assento desenhado. */
+  const crewCells = plan.crew.slice(0, 2).map((member) => ({
+    label: member.role,
+    weightKg: member.weightKg,
+  }));
 
   return (
     <div className={styles.shell}>
@@ -150,28 +185,36 @@ export function PlanningScreen() {
           onChangeUnit={setFuelUnit}
         />
 
-        <CrewSection
-          crew={draft.crew}
-          totalKg={totals.crewKg}
-          totalLb={totals.crewLb}
-          onChangeWeight={setCrewWeight}
-          onAdd={addCrewMember}
-          onRemove={removeCrewMember}
-        />
+        <div ref={crewRef}>
+          <CrewSection
+            crew={draft.crew}
+            totalKg={totals.crewKg}
+            totalLb={totals.crewLb}
+            onChangeWeight={setCrewWeight}
+            onAdd={addCrewMember}
+            onRemove={removeCrewMember}
+          />
+        </div>
 
         <PassengersSection
-          stations={stations}
+          seats={result.seats}
+          canDrawMap={canDrawCabinMap(profile)}
           loads={draft.passengerLoads}
           count={draft.passengerCount}
           parsedCount={plan.passengerCount}
-          seats={profile.registration.passengerSeats}
+          seatCount={profile.registration.passengerSeats}
           averageKg={AVERAGE_PASSENGER_KG}
           totalKg={totals.passengerKg}
           totalLb={totals.passengerLb}
+          zones={zoneCells}
+          crew={crewCells}
+          onSelectCrew={() =>
+            crewRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' })
+          }
           onChangeLoad={setPassengerLoad}
           onChangeCount={setPassengerCount}
           onDistribute={(totalKg) => {
-            const spread = distributeBySeats(totalKg, stations);
+            const spread = distributeBySeats(totalKg, result.seats);
             const asText: Record<string, string> = {};
             for (const [id, kg] of Object.entries(spread)) {
               asText[id] = String(kg);
@@ -183,6 +226,8 @@ export function PlanningScreen() {
         <CargoSection
           positions={result.positions}
           positionLoads={draft.positionLoads}
+          loadedLb={plan.positionLoads}
+          cg={result.cg}
           unit={draft.cargoUnit}
           onChangeUnit={setCargoUnit}
           restraint={draft.cargoRestraint}

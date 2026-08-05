@@ -14,34 +14,33 @@
  * e a estimativa fica apenas por peso.
  */
 
-import type { PassengerStation } from '../../data/aircraft/c98.seats.ts';
 import { AVERAGE_PASSENGER_KG } from '../../data/operational.ts';
+import type { SeatSlot } from './seats.ts';
 import { kgToLb } from './units.ts';
 
 /**
- * Reparte um peso total entre as estações, proporcionalmente aos lugares.
+ * Reparte um peso total igualmente entre os assentos.
  *
  * É uma conveniência de preenchimento, não uma regra: dá um ponto de partida
- * equilibrado que o piloto ajusta em seguida, estação por estação. A última
- * estação absorve a sobra do arredondamento, para que a soma feche com o total.
+ * equilibrado que o piloto ajusta em seguida, assento por assento. O último
+ * assento absorve a sobra do arredondamento, para que a soma feche com o total.
  */
 export function distributeBySeats(
   totalKg: number,
-  stations: readonly PassengerStation[],
+  seats: readonly SeatSlot[],
 ): Record<string, number> {
-  const totalSeats = stations.reduce((sum, s) => sum + s.seats, 0);
-  if (totalSeats === 0 || totalKg <= 0) return {};
+  if (seats.length === 0 || totalKg <= 0) return {};
 
   const loads: Record<string, number> = {};
   let assigned = 0;
 
-  stations.forEach((station, index) => {
-    const isLast = index === stations.length - 1;
+  seats.forEach((seat, index) => {
+    const isLast = index === seats.length - 1;
     const share = isLast
       ? totalKg - assigned
-      : Math.round((totalKg * station.seats * 10) / totalSeats) / 10;
-    loads[station.id] = Math.round(share * 10) / 10;
-    assigned += loads[station.id] ?? 0;
+      : Math.round((totalKg * 10) / seats.length) / 10;
+    loads[seat.id] = Math.round(share * 10) / 10;
+    assigned += loads[seat.id] ?? 0;
   });
 
   return loads;

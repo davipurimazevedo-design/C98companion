@@ -38,6 +38,15 @@ export interface LoadPosition {
    * Usado só no cálculo de momento; não influencia limite de peso.
    */
   readonly armIn: Pending<number>;
+  /**
+   * Estações inicial e final da posição, em polegadas atrás do datum.
+   *
+   * Não entram em cálculo nenhum: existem para que os desenhos da aeronave
+   * possam ser traçados a partir das cotas publicadas na página 6-15, em vez
+   * de proporções estimadas no olho.
+   */
+  readonly fromIn: Pending<number>;
+  readonly toIn: Pending<number>;
   /** Limite com a carga amarrada por tie-downs. */
   readonly maxSecuredLb: Pending<number>;
   /** Limite com a carga não amarrada, contida por divisórias. */

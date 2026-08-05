@@ -1,0 +1,101 @@
+/* O desenho inteiro vive numa caixa de posicionamento relativo: cada elemento
+   é colocado pela estação, em porcentagem, pela régua de `stationScale`. */
+.frame {
+  position: relative;
+  height: 168px;
+  margin: var(--sp-2) 0 var(--sp-1);
+}
+
+/* Contorno da cabine, e ao mesmo tempo o sistema de coordenadas dos assentos:
+   as faixas laterais são porcentagem DESTA altura, não a da caixa inteira.
+   Ilustrativo — o que posiciona qualquer coisa é a estação. O canto
+   arredondado à esquerda sugere o nariz sem afirmar proporção. */
+.deck {
+  position: absolute;
+  inset: 0 0 34px 0;
+  border: 1.5px solid var(--line);
+  border-radius: 46px 14px 14px 46px;
+  background: var(--surface-2);
+}
+
+.crewSeat {
+  position: absolute;
+  width: 26px;
+  height: 26px;
+  transform: translate(-50%, -50%);
+  display: grid;
+  place-items: center;
+  border: 1.5px dashed var(--line);
+  border-radius: 50%;
+  background: var(--surface);
+  color: var(--ink-3);
+  font-family: var(--font-num);
+  font-size: 10px;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.crewSeat:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+/* Tripulação ocupada usa contorno cheio, não preenchimento: o peso dela é
+   lançado noutra seção, e preencher igual aos passageiros sugeriria que se
+   edita aqui. */
+.crewOccupied {
+  border-style: solid;
+  border-color: var(--ink-3);
+  color: var(--ink-2);
+}
+
+/* Régua das zonas de carga do piso, abaixo do contorno. */
+.zoneAxis {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 26px;
+}
+
+.zone {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  display: grid;
+  place-items: center;
+  border: 1px solid var(--line-soft);
+  border-radius: var(--radius-sm);
+  background: var(--surface-2);
+  overflow: hidden;
+  transition:
+    background-color var(--dur-fast) var(--ease),
+    border-color var(--dur-fast) var(--ease);
+}
+
+.zoneLoaded {
+  border-color: color-mix(in srgb, var(--accent) 45%, transparent);
+  background: var(--accent-soft);
+}
+
+.zoneOver {
+  border-color: var(--crit);
+  background: var(--crit-soft);
+}
+
+.zoneLabel {
+  font-family: var(--font-num);
+  font-variant-numeric: tabular-nums;
+  font-size: var(--size-micro);
+  font-weight: 700;
+  color: var(--ink-3);
+  white-space: nowrap;
+}
+
+.zoneLoaded .zoneLabel {
+  color: var(--accent);
+}
+
+.zoneOver .zoneLabel {
+  color: var(--crit);
+}

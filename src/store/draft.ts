@@ -43,7 +43,13 @@ export interface PlanDraft {
   readonly fuel: string;
   readonly fuelUnit: FuelUnit;
   readonly crew: readonly CrewDraft[];
-  /** Peso dos passageiros por estação de assento, em quilogramas. */
+  /**
+   * Peso de cada passageiro, em quilogramas, indexado pelo ASSENTO.
+   *
+   * Por assento, e não por estação, porque é assim que o mapa da cabine é
+   * tocado. O braço continua vindo da estação — assentos que a compartilham
+   * têm o mesmo braço, e a soma dá o mesmo momento.
+   */
   readonly passengerLoads: Readonly<Record<string, string>>;
   /** Quantidade de passageiros. Opcional: em branco desliga o controle de assentos. */
   readonly passengerCount: string;

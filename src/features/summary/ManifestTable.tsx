@@ -61,14 +61,30 @@ function buildRows(
     });
   }
 
-  rows.push({
-    label:
-      plan.passengerCount === null
-        ? 'Passageiros'
-        : `Passageiros (${plan.passengerCount})`,
-    origin: `${formatKg(totals.passengerKg)} kg`,
-    lb: totals.passengerLb,
-  });
+  /* Assento a assento, como no manifesto do manual: é o que permite conferir
+     onde cada pessoa está sentada, e não só quanto pesam somadas. */
+  const occupied = result.seats.filter(
+    (seat) => (plan.passengerLoads[seat.id] ?? 0) > 0,
+  );
+  for (const seat of occupied) {
+    const weightKg = plan.passengerLoads[seat.id] ?? 0;
+    rows.push({
+      label: seat.label,
+      origin: `${formatKg(weightKg)} kg`,
+      lb: kgToLb(weightKg),
+    });
+  }
+
+  if (occupied.length === 0) {
+    rows.push({
+      label:
+        plan.passengerCount === null
+          ? 'Passageiros'
+          : `Passageiros (${plan.passengerCount})`,
+      origin: `${formatKg(totals.passengerKg)} kg`,
+      lb: totals.passengerLb,
+    });
+  }
 
   /* Só as posições realmente carregadas: uma tabela com dez zeros não ajuda a
      conferir nada. */
