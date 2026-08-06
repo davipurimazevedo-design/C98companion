@@ -20,6 +20,22 @@
   color: var(--ink-3);
 }
 
+/* Cor de atenção (--warn), não de destaque (--accent): "beta" pede cautela, não
+   convida a tocar. É status do aplicativo, não da situação de peso — por isso
+   fica aqui, e não na barra fixa, que é exclusiva do semáforo do carregamento. */
+.betaBadge {
+  flex: none;
+  padding: 1px 7px;
+  font-size: var(--size-micro);
+  font-weight: 700;
+  letter-spacing: var(--track-caps);
+  text-transform: uppercase;
+  color: var(--warn);
+  background: var(--warn-soft);
+  border: 1px solid color-mix(in srgb, var(--warn) 35%, transparent);
+  border-radius: var(--radius-pill);
+}
+
 .reset {
   margin-left: auto;
   padding: 6px 10px;

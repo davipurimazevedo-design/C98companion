@@ -127,6 +127,9 @@ export function PlanningScreen() {
 
       <div className={styles.topbar}>
         <span className={styles.appName}>{C98.designation}</span>
+        <span className={styles.betaBadge} title="Aplicativo em fase de testes">
+          Beta
+        </span>
         <button type="button" className={styles.reset} onClick={handleReset}>
           Novo planejamento
         </button>
