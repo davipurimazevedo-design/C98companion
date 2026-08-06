@@ -6,6 +6,7 @@
  * passa a ser auditada pelos testes estruturais automaticamente.
  */
 
+import { C98_LANDING } from './c98.landing.ts';
 import { C98_TAKEOFF_FLAPS_0 } from './c98.takeoff0.ts';
 import { C98_TAKEOFF_FLAPS_20 } from './c98.takeoff20.ts';
 import type { DistanceTable } from './types.ts';
@@ -14,6 +15,7 @@ import type { DistanceTable } from './types.ts';
 export const PERFORMANCE_TABLES: readonly DistanceTable[] = [
   C98_TAKEOFF_FLAPS_20,
   C98_TAKEOFF_FLAPS_0,
+  C98_LANDING,
 ];
 
 /** Ajuste de flap na decolagem. É o que escolhe entre as duas tabelas. */
@@ -24,7 +26,7 @@ export function takeoffTableFor(flaps: TakeoffFlaps): DistanceTable {
   return flaps === 20 ? C98_TAKEOFF_FLAPS_20 : C98_TAKEOFF_FLAPS_0;
 }
 
-export { C98_TAKEOFF_FLAPS_0, C98_TAKEOFF_FLAPS_20 };
+export { C98_LANDING, C98_TAKEOFF_FLAPS_0, C98_TAKEOFF_FLAPS_20 };
 export type {
   AboveTopTemperature,
   DistanceTable,

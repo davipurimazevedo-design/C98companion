@@ -11,7 +11,11 @@
 
 import { describe, expect, it } from 'vitest';
 
-import { C98_TAKEOFF_FLAPS_0, C98_TAKEOFF_FLAPS_20 } from './index.ts';
+import {
+  C98_LANDING,
+  C98_TAKEOFF_FLAPS_0,
+  C98_TAKEOFF_FLAPS_20,
+} from './index.ts';
 import type { DistanceTable } from './types.ts';
 
 /** Lê uma célula pelos valores dos eixos, como se lê a página impressa. */
@@ -177,5 +181,78 @@ describe('decolagem flaps 0° — Figura 5-9A (páginas 5-24 e 5-25)', () => {
     const vinte = cell(C98_TAKEOFF_FLAPS_20, 8750, 4000, 0);
     expect(zero?.[0]).toBeGreaterThan(vinte?.[0] ?? 0);
     expect(zero?.[1]).toBeGreaterThan(vinte?.[1] ?? 0);
+  });
+});
+
+describe('pouso — Figura 5-23 (páginas 5-59 e 5-60)', () => {
+  const table = C98_LANDING;
+
+  it('flaps 30°, com cargo pod instalado', () => {
+    expect(table.configuration).toBe('cargo-pod');
+    expect(table.flapsDeg).toBe(30);
+  });
+
+  it('os pesos param em 8500 lb, que é o peso máximo de pouso', () => {
+    expect(table.blocks.map((block) => block.weightLb)).toEqual([
+      7000, 7500, 8000, 8500,
+    ]);
+  });
+
+  it('publica só a velocidade de travessia dos 50 pés', () => {
+    expect(table.blocks.map((b) => [b.weightLb, b.liftOffKias, b.at50FtKias])).toEqual([
+      [7000, null, 71],
+      [7500, null, 73],
+      [8000, null, 75],
+      [8500, null, 78],
+    ]);
+  });
+
+  /* O valor que o Sample Problem da página 5-11 usa, depois de arredondar o
+     peso de pouso de 6975 lb para o bloco de 7000. */
+  it('7000 lb, 2000 ft, 30 °C: 850 e 1650 pés', () => {
+    expect(cell(table, 7000, 2000, 30)).toEqual([850, 1650]);
+  });
+
+  it('cantos do bloco de 8500 lb', () => {
+    expect(cell(table, 8500, 0, -10)).toEqual([835, 1625]);
+    expect(cell(table, 8500, 0, 40)).toEqual([995, 1855]);
+    expect(cell(table, 8500, 12_000, -10)).toEqual([1315, 2295]);
+    expect(cell(table, 8500, 12_000, 30)).toEqual([1515, 2565]);
+  });
+
+  it('cantos do bloco de 8000 lb', () => {
+    expect(cell(table, 8000, 0, -10)).toEqual([785, 1555]);
+    expect(cell(table, 8000, 0, 40)).toEqual([935, 1770]);
+    expect(cell(table, 8000, 12_000, -10)).toEqual([1235, 2195]);
+    expect(cell(table, 8000, 12_000, 30)).toEqual([1425, 2450]);
+  });
+
+  it('cantos do bloco de 7500 lb', () => {
+    expect(cell(table, 7500, 0, -10)).toEqual([740, 1480]);
+    expect(cell(table, 7500, 0, 40)).toEqual([880, 1685]);
+    expect(cell(table, 7500, 12_000, -10)).toEqual([1160, 2085]);
+    expect(cell(table, 7500, 12_000, 30)).toEqual([1340, 2325]);
+  });
+
+  it('cantos do bloco de 7000 lb', () => {
+    expect(cell(table, 7000, 0, -10)).toEqual([690, 1410]);
+    expect(cell(table, 7000, 0, 40)).toEqual([820, 1600]);
+    expect(cell(table, 7000, 12_000, -10)).toEqual([1080, 1980]);
+    expect(cell(table, 7000, 12_000, 30)).toEqual([1245, 2205]);
+  });
+
+  it('a coluna de 40 °C some a partir de 10000 ft, em todos os pesos', () => {
+    for (const block of table.blocks) {
+      expect(cell(table, block.weightLb, 8000, 40)).not.toBeNull();
+      expect(cell(table, block.weightLb, 10_000, 40)).toBeNull();
+      expect(cell(table, block.weightLb, 12_000, 40)).toBeNull();
+    }
+  });
+
+  it('pousar exige menos pista que decolar no mesmo peso e ponto da grade', () => {
+    /* Guarda contra as tabelas de pouso e decolagem trocadas entre si. */
+    const pouso = cell(table, 8000, 4000, 20);
+    const decolagem = cell(C98_TAKEOFF_FLAPS_20, 8300, 4000, 20);
+    expect(pouso?.[1]).toBeLessThan(decolagem?.[1] ?? 0);
   });
 });
