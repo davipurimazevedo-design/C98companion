@@ -1,0 +1,34 @@
+.bar {
+  display: flex;
+  gap: var(--sp-1);
+  padding: var(--sp-1);
+  margin: var(--sp-3) var(--sp-4) 0;
+  background: var(--surface-2);
+  border: 1px solid var(--line-soft);
+  border-radius: var(--radius);
+}
+
+.tab {
+  flex: 1;
+  min-height: 36px;
+  padding: 0 var(--sp-3);
+  font-size: var(--size-body);
+  font-weight: 600;
+  color: var(--ink-2);
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: var(--radius-sm);
+  transition:
+    color var(--dur-fast) var(--ease),
+    background-color var(--dur-fast) var(--ease);
+}
+
+.tab:hover {
+  color: var(--ink);
+}
+
+.tab[aria-selected='true'] {
+  color: var(--accent);
+  background: var(--surface);
+  border-color: var(--line);
+}

@@ -1,0 +1,72 @@
+/* Mesmas medidas da tela de planejamento: as duas são a mesma aplicação, e
+   trocar de aba não pode mexer na largura nem no fundo. */
+.shell {
+  max-width: var(--app-width);
+  margin: 0 auto;
+  min-height: 100dvh;
+  background: var(--ground);
+}
+
+.topbar {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+  padding: 10px var(--sp-4) 0;
+}
+
+.appName {
+  font-size: var(--size-eyebrow);
+  font-weight: 700;
+  letter-spacing: var(--track-eyebrow);
+  text-transform: uppercase;
+  color: var(--ink-3);
+}
+
+.betaBadge {
+  flex: none;
+  padding: 1px 7px;
+  font-size: var(--size-micro);
+  font-weight: 700;
+  letter-spacing: var(--track-caps);
+  text-transform: uppercase;
+  color: var(--warn);
+  background: var(--warn-soft);
+  border: 1px solid color-mix(in srgb, var(--warn) 35%, transparent);
+  border-radius: var(--radius-pill);
+}
+
+.reset {
+  margin-left: auto;
+  padding: 6px 10px;
+  font-size: var(--size-small);
+  font-weight: 600;
+  color: var(--ink-2);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  background: var(--surface);
+  transition:
+    color var(--dur-fast) var(--ease),
+    border-color var(--dur-fast) var(--ease);
+}
+
+.reset:hover {
+  color: var(--ink);
+  border-color: var(--ink-3);
+}
+
+.main {
+  padding: var(--sp-3) var(--sp-4) var(--sp-6);
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-3);
+}
+
+.scope {
+  font-size: var(--size-small);
+  color: var(--ink-3);
+  line-height: 1.5;
+}
+
+.scope strong {
+  color: var(--ink-2);
+}

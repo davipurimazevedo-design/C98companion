@@ -31,6 +31,16 @@ export function formatL(value: number): string {
   return integer.format(Math.round(value));
 }
 
+/** Distância em pés, arredondada para inteiro. Ex.: `2933.4` → `"2.933"`. */
+export function formatFt(value: number): string {
+  return integer.format(Math.round(value));
+}
+
+/** Distância em metros, arredondada para inteiro. */
+export function formatM(value: number): string {
+  return integer.format(Math.round(value));
+}
+
 /** Percentual sem casas decimais. Ex.: `76.6` → `"77%"`. */
 export function formatPct(value: number): string {
   return `${integer.format(Math.round(value))}%`;

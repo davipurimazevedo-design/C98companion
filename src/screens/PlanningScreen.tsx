@@ -6,7 +6,7 @@
  * consequência do preenchimento, não de uma ação à parte.
  */
 
-import { useMemo, useRef } from 'react';
+import { useMemo, useRef, type ReactNode } from 'react';
 
 import {
   C98,
@@ -37,7 +37,8 @@ import { VersionBar } from '../ui/components/VersionBar.tsx';
 import { DASH, formatLb, formatPct } from '../utils/format.ts';
 import styles from './PlanningScreen.module.css';
 
-export function PlanningScreen() {
+/** `nav` é a barra de abas, montada pela raiz e comum às duas telas. */
+export function PlanningScreen({ nav }: { readonly nav: ReactNode }) {
   const draft = usePlanStore((state) => state.draft);
   const selectAircraft = usePlanStore((state) => state.selectAircraft);
   const setFuel = usePlanStore((state) => state.setFuel);
@@ -134,6 +135,8 @@ export function PlanningScreen() {
           Novo planejamento
         </button>
       </div>
+
+      {nav}
 
       {missingData.length > 0 && (
         <div className={styles.pending}>

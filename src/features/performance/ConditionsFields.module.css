@@ -1,0 +1,27 @@
+/* Botão de sinal, à esquerda do campo. Discreto por ser exceção: a maior
+   parte dos valores é positiva, e ele não deve competir com o número. */
+.sign {
+  flex: none;
+  width: 34px;
+  height: 34px;
+  display: grid;
+  place-items: center;
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--ink-2);
+  background: var(--surface-2);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  transition:
+    color var(--dur-fast) var(--ease),
+    border-color var(--dur-fast) var(--ease);
+}
+
+.sign:hover {
+  color: var(--accent);
+  border-color: var(--accent);
+}
+
+.sign:active {
+  transform: translateY(1px);
+}

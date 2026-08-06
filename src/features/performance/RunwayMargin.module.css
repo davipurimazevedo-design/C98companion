@@ -1,0 +1,74 @@
+.box {
+  margin-top: var(--sp-3);
+  padding: 11px 13px;
+  border-radius: var(--radius);
+  border: 1px solid transparent;
+}
+
+.suficiente {
+  background: var(--ok-soft);
+  border-color: color-mix(in srgb, var(--ok) 30%, transparent);
+  --tone: var(--ok);
+}
+
+.critica {
+  background: var(--warn-soft);
+  border-color: color-mix(in srgb, var(--warn) 35%, transparent);
+  --tone: var(--warn);
+}
+
+.insuficiente {
+  background: var(--crit-soft);
+  border-color: color-mix(in srgb, var(--crit) 35%, transparent);
+  --tone: var(--crit);
+}
+
+.head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--sp-2);
+}
+
+.verdict {
+  font-size: var(--size-body);
+  font-weight: 700;
+  color: var(--tone);
+}
+
+.used {
+  font-family: var(--font-num);
+  font-variant-numeric: tabular-nums;
+  font-size: var(--size-small);
+  font-weight: 700;
+  color: var(--tone);
+}
+
+.track {
+  height: 6px;
+  margin: var(--sp-2) 0;
+  border-radius: var(--radius-pill);
+  background: color-mix(in srgb, var(--tone) 18%, transparent);
+  overflow: hidden;
+}
+
+.fill {
+  display: block;
+  height: 100%;
+  background: var(--tone);
+  border-radius: var(--radius-pill);
+  transition: width var(--dur) var(--ease);
+}
+
+.detail {
+  font-size: 12.5px;
+  color: var(--ink-2);
+  line-height: 1.45;
+}
+
+.caveat {
+  margin-top: var(--sp-1);
+  font-size: var(--size-small);
+  color: var(--ink-3);
+  line-height: 1.4;
+}

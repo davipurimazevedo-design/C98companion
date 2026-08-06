@@ -19,8 +19,11 @@ import styles from './VersionBar.module.css';
 
 export function VersionBar({
   manualRevision,
+  sections = 'Section 6 e Section 2',
 }: {
   readonly manualRevision: string;
+  /** Seções do manual de onde vieram os dados da tela exibida. */
+  readonly sections?: string;
 }) {
   const {
     needRefresh: [needRefresh, setNeedRefresh],
@@ -33,9 +36,9 @@ export function VersionBar({
         Planejador C-98 v{__APP_VERSION__} · build {__BUILD_DATE__}
       </span>
       <span className={styles.source}>
-        Limites transcritos do POH do Cessna Caravan 208B, Section 6 e
-        Section 2, {manualRevision}. Confira sempre a revisão vigente antes de
-        usar em planejamento.
+        Limites transcritos do POH do Cessna Caravan 208B, {sections},{' '}
+        {manualRevision}. Confira sempre a revisão vigente antes de usar em
+        planejamento.
       </span>
       <span className={styles.source}>
         A responsabilidade pela operação dentro dos limites é do comandante da

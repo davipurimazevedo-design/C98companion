@@ -16,8 +16,12 @@ interface WeightInputProps {
   /**
    * `pax` é contagem e `L` é volume, não peso — usam o mesmo campo por
    * consistência visual, e a conversão para peso acontece em `toMissionPlan`.
+   *
+   * As quatro últimas são da tela de Performance, onde os campos não são de
+   * peso mas pedem exatamente o mesmo comportamento: teclado numérico, fonte
+   * que não provoca zoom no iOS e unidade fixa ao lado do número.
    */
-  readonly unit: 'kg' | 'LB' | 'pax' | 'L';
+  readonly unit: 'kg' | 'LB' | 'pax' | 'L' | 'ft' | '°C' | 'kt' | 'm';
   readonly onChange: (value: string) => void;
   readonly ariaLabel: string;
   readonly invalid?: boolean;
