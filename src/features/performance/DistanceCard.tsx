@@ -27,7 +27,7 @@ import type {
   WindDirectionChoice,
 } from '../../store/performanceDraft.ts';
 import { Section } from '../../ui/components/Section.tsx';
-import { formatFt } from '../../utils/format.ts';
+import { formatFt, formatInteger } from '../../utils/format.ts';
 import { ConditionsFields } from './ConditionsFields.tsx';
 import { RunwayMargin } from './RunwayMargin.tsx';
 import styles from './DistanceCard.module.css';
@@ -36,13 +36,13 @@ interface DistanceCardProps {
   readonly title: string;
   /** Controle exibido na linha do título. Hoje, o ajuste de flap. */
   readonly control?: ReactNode;
+  /** Explica qual peso este cartão espera. */
+  readonly weightHint: string;
   readonly conditions: ConditionsDraft;
   readonly outcome: PerformanceOutcome;
   readonly onChangeField: (field: ConditionsField, value: string) => void;
   readonly onChangeWindDirection: (direction: WindDirectionChoice) => void;
 }
-
-const INTEGER = new Intl.NumberFormat('pt-BR');
 
 /** "peso, altitude-pressão e temperatura" — com o "e" antes do último. */
 const LIST = new Intl.ListFormat('pt-BR', {
@@ -56,7 +56,7 @@ const LIST = new Intl.ListFormat('pt-BR', {
  * negativa não passar batida.
  */
 function axisValue(value: number): string {
-  return INTEGER.format(value).replace('-', '−');
+  return formatInteger(value).replace('-', '−');
 }
 
 /** Percentual com sinal explícito. Ex.: `-11` → `"−11%"`. */
@@ -76,6 +76,7 @@ function signedFt(feet: number): string {
 export function DistanceCard({
   title,
   control,
+  weightHint,
   conditions,
   outcome,
   onChangeField,
@@ -96,6 +97,7 @@ export function DistanceCard({
     >
       <ConditionsFields
         conditions={conditions}
+        weightHint={weightHint}
         onChangeField={onChangeField}
         onChangeWindDirection={onChangeWindDirection}
       />

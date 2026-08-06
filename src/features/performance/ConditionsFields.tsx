@@ -22,12 +22,15 @@ import {
 import { FieldRow } from '../../ui/components/FieldRow.tsx';
 import { SegmentedControl } from '../../ui/components/SegmentedControl.tsx';
 import { WeightInput } from '../../ui/components/WeightInput.tsx';
+import { parseSignedNumber } from '../../domain/validation/parseNumber.ts';
 import { fieldError, signedFieldError } from '../../ui/fieldError.ts';
 import { formatFt } from '../../utils/format.ts';
 import styles from './ConditionsFields.module.css';
 
 interface ConditionsFieldsProps {
   readonly conditions: ConditionsDraft;
+  /** Explica QUAL peso o cartão espera — os dois não são o mesmo. */
+  readonly weightHint: string;
   readonly onChangeField: (field: ConditionsField, value: string) => void;
   readonly onChangeWindDirection: (direction: WindDirectionChoice) => void;
 }
@@ -55,6 +58,7 @@ function SignButton({ onClick }: { readonly onClick: () => void }) {
 
 export function ConditionsFields({
   conditions,
+  weightHint,
   onChangeField,
   onChangeWindDirection,
 }: ConditionsFieldsProps) {
@@ -73,16 +77,24 @@ export function ConditionsFields({
   const runwayError = fieldError(conditions.runway, FIELD_RANGE.runway.max);
 
   /* Equivalente em pés ao lado do campo: as cartas publicam metros, e as
-     tabelas do manual, pés. Ver os dois evita a conversão de cabeça. */
-  const runwayM = Number(conditions.runway.replace(',', '.'));
+     tabelas do manual, pés. Ver os dois evita a conversão de cabeça.
+
+     A leitura passa pelo MESMO parser do cálculo, e não por um `Number()`
+     próprio: um separador de milhar aceito aqui e recusado ali faria a dica
+     discordar da distância exibida logo abaixo. */
+  const runwayM = parseSignedNumber(
+    conditions.runway,
+    FIELD_RANGE.runway.min,
+    FIELD_RANGE.runway.max,
+  ).value;
   const runwayHint =
-    Number.isFinite(runwayM) && runwayM > 0
+    runwayM !== null && runwayM > 0
       ? `${formatFt(metresToFeet(runwayM))} ft`
       : 'Comprimento disponível';
 
   return (
     <>
-      <FieldRow label="Peso" hint="Na decolagem ou no pouso" error={weightError}>
+      <FieldRow label="Peso" hint={weightHint} error={weightError}>
         <WeightInput
           value={conditions.weight}
           unit="LB"

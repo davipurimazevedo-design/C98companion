@@ -64,15 +64,16 @@ export function PerformanceScreen({ nav }: { readonly nav: ReactNode }) {
       <main className={styles.main}>
         <DistanceCard
           title="Decolagem"
+          weightHint="Peso na decolagem"
           control={
             <SegmentedControl
               compact
               label="Ajuste de flap na decolagem"
-              value={String(draft.takeoffFlaps) as '20' | '0'}
-              onChange={(value) => setTakeoffFlaps(value === '0' ? 0 : 20)}
+              value={draft.takeoffFlaps === 0 ? 'flaps-0' : 'flaps-20'}
+              onChange={(value) => setTakeoffFlaps(value === 'flaps-0' ? 0 : 20)}
               options={[
-                { value: '20', label: 'Flaps 20°' },
-                { value: '0', label: 'Flaps 0°' },
+                { value: 'flaps-20', label: 'Flaps 20°' },
+                { value: 'flaps-0', label: 'Flaps 0°' },
               ]}
             />
           }
@@ -86,6 +87,7 @@ export function PerformanceScreen({ nav }: { readonly nav: ReactNode }) {
 
         <DistanceCard
           title="Pouso"
+          weightHint="Decolagem menos o combustível do trecho"
           conditions={draft.landing}
           outcome={landing}
           onChangeField={(field, value) => setField('landing', field, value)}

@@ -13,7 +13,8 @@ mudam.
 ## Situação atual
 
 **Cadastrado** — Cessna Model 208B (675 SHP), Pilot's Operating Handbook,
-Section 6 — Weight & Balance / Equipment List, **Revision 23**.
+Section 6 — Weight & Balance / Equipment List, **Revision 23**, e
+Section 5 — Performance, mesma revisão (ver `performance/` ao final).
 
 | Dado | Valor | Página |
 |---|---|---|
@@ -129,6 +130,45 @@ dia frio cabe mais peso de combustível dentro do mesmo volume.
 3. Preencha o valor no arquivo correspondente, anotando a página.
 4. Inclua o rótulo em `describeMissingData`, em `aircraft/index.ts`.
 5. Acrescente a asserção em `aircraft/manual.test.ts`.
+
+---
+
+## Tabelas de performance (`performance/`)
+
+Transcrição da **Section 5 — Performance**, mesma Revision 23, somente do
+bloco *AIRPLANES WITH CARGO POD INSTALLED*: toda a frota da unidade tem pod, e
+as tabelas sem pod não estão cadastradas.
+
+| Arquivo | Tabela | Figura | Páginas |
+|---|---|---|---|
+| `c98.takeoff20.ts` | Decolagem short field, flaps 20° | 5-9 | 5-22, 5-23 |
+| `c98.takeoff0.ts` | Decolagem, flaps 0° | 5-9A | 5-24, 5-25 |
+| `c98.landing.ts` | Pouso short field, flaps 30° | 5-23 | 5-59, 5-60 |
+
+Cada tabela carrega os **próprios eixos**. A de flaps 0° vai de −20 a 10 °C, e
+as outras de −10 a 40 °C — ler uma com o eixo da outra devolveria a coluna
+errada em silêncio.
+
+São cerca de novecentos números copiados à mão, e um dígito trocado não
+aparece como erro: aparece como distância plausível e falsa. Duas auditorias
+automáticas defendem a transcrição:
+
+- **`monotonia.test.ts`** — a distância cresce com altitude, com temperatura e
+  com peso em toda a grade publicada, e os traços do manual só aparecem no
+  canto quente e alto. Qualquer inversão é praticamente sempre dígito trocado.
+  Vale para qualquer tabela nova, só por ela ser registrada em `index.ts`.
+- **`manual.test.ts`** — repete os cantos de cada bloco com a página anotada,
+  para pegar linha ou coluna deslocada, que preserva a ordem e escaparia da
+  monotonia.
+
+Além delas, os dois *Sample Problems* do próprio manual (páginas 5-7 e 5-11)
+são teste em `domain/performance/index.test.ts`.
+
+### Para acrescentar uma tabela
+
+1. Transcreva num arquivo novo, seguindo o formato de `types.ts`.
+2. Registre em `index.ts` — as auditorias passam a valer sozinhas.
+3. Acrescente os cantos e as particularidades em `manual.test.ts`.
 
 ---
 

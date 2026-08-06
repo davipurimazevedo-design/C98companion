@@ -105,6 +105,8 @@ export function toPerformanceQuery(
     pressureAltitudeFt: parse(conditions.altitude, FIELD_RANGE.altitude),
     temperatureC: parse(conditions.temperature, FIELD_RANGE.temperature),
     windKt: conditions.windDirection === 'cauda' ? -windKt : windKt,
-    runwayFt: runwayM === null ? null : metresToFeet(runwayM),
+    /* Pista de zero metro não é pista curta: é campo não preenchido. Tratada
+       como ausente, o cartão mostra as distâncias e omite a margem. */
+    runwayFt: runwayM === null || runwayM <= 0 ? null : metresToFeet(runwayM),
   };
 }

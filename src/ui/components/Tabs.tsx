@@ -6,6 +6,10 @@
  * volta entre elas enquanto decide o carregamento.
  *
  * Cada tela mantém o próprio rascunho — trocar de aba não apaga nada.
+ *
+ * É navegação, e não um painel de abas: cada botão troca a tela inteira, e
+ * por isso a marcação é `nav` com `aria-current`, e não `tablist`/`tab`, que
+ * exigiria um `tabpanel` correspondente para fazer sentido no leitor de tela.
  */
 
 import styles from './Tabs.module.css';
@@ -24,19 +28,18 @@ export function Tabs<T extends string>({
   onChange,
 }: TabsProps<T>) {
   return (
-    <div className={styles.bar} role="tablist" aria-label={label}>
+    <nav className={styles.bar} aria-label={label}>
       {options.map((option) => (
         <button
           key={option.value}
           type="button"
-          role="tab"
           className={styles.tab}
-          aria-selected={value === option.value}
+          aria-current={value === option.value ? 'page' : undefined}
           onClick={() => onChange(option.value)}
         >
           {option.label}
         </button>
       ))}
-    </div>
+    </nav>
   );
 }

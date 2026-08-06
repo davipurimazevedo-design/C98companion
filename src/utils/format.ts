@@ -31,6 +31,11 @@ export function formatL(value: number): string {
   return integer.format(Math.round(value));
 }
 
+/** Número inteiro com separador de milhar. Ex.: `8750` → `"8.750"`. */
+export function formatInteger(value: number): string {
+  return integer.format(value);
+}
+
 /** Distância em pés, arredondada para inteiro. Ex.: `2933.4` → `"2.933"`. */
 export function formatFt(value: number): string {
   return integer.format(Math.round(value));
