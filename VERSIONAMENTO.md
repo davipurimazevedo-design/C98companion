@@ -48,3 +48,4 @@ selo num `0.x` se a validação vier antes de qualquer motivo para subir para
 |---|---|
 | 0.1.0 | Cálculo completo: peso, limites, combustível, centragem, unidades alternativas |
 | 0.2.0 | Mapa tocável da aeronave (assentos, pod, zonas), funções corretas de tripulação, seções de carga separadas, conferência em quilogramas, rodapé de procedência, selo Beta |
+| 0.2.1 | Correção: "Distribuir pela média" dividia o peso total pelos assentos instalados, e não pela quantidade de passageiros informada |

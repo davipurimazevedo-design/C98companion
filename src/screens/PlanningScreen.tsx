@@ -194,8 +194,12 @@ export function PlanningScreen() {
           }
           onChangeLoad={setPassengerLoad}
           onChangeCount={setPassengerCount}
-          onDistribute={(totalKg) => {
-            const spread = distributeBySeats(totalKg, result.seats);
+          onDistribute={(count) => {
+            const spread = distributeBySeats(
+              count,
+              AVERAGE_PASSENGER_KG,
+              result.seats,
+            );
             const asText: Record<string, string> = {};
             for (const [id, kg] of Object.entries(spread)) {
               asText[id] = String(kg);

@@ -19,29 +19,36 @@ import type { SeatSlot } from './seats.ts';
 import { kgToLb } from './units.ts';
 
 /**
- * Reparte um peso total igualmente entre os assentos.
+ * Embarca N passageiros, um por assento, com o peso médio cada.
  *
  * É uma conveniência de preenchimento, não uma regra: dá um ponto de partida
- * equilibrado que o piloto ajusta em seguida, assento por assento. O último
- * assento absorve a sobra do arredondamento, para que a soma feche com o total.
+ * — "4 passageiros" viram 4 assentos com o peso médio — que o piloto ajusta em
+ * seguida, assento por assento.
+ *
+ * Preenche pela ORDEM da lista de assentos, que é a ordem física dianteiro a
+ * traseiro (ver `c98.seats.ts`). Assentos além dos N primeiros não entram no
+ * resultado — devolver `{}` para eles é o que permite ao chamador esvaziá-los
+ * ao substituir o carregamento inteiro, e não deixar sobras de um preenchimento
+ * anterior.
+ *
+ * `count` é travado ao número de assentos disponíveis: mais passageiros do que
+ * lugares é um problema de ASSENTO, sinalizado à parte pelo aviso de excesso —
+ * esta função nunca inventa um décimo assento.
  */
 export function distributeBySeats(
-  totalKg: number,
+  count: number,
+  averageKg: number,
   seats: readonly SeatSlot[],
 ): Record<string, number> {
-  if (seats.length === 0 || totalKg <= 0) return {};
+  if (count <= 0 || seats.length === 0) return {};
 
   const loads: Record<string, number> = {};
-  let assigned = 0;
+  const toFill = Math.min(count, seats.length);
 
-  seats.forEach((seat, index) => {
-    const isLast = index === seats.length - 1;
-    const share = isLast
-      ? totalKg - assigned
-      : Math.round((totalKg * 10) / seats.length) / 10;
-    loads[seat.id] = Math.round(share * 10) / 10;
-    assigned += loads[seat.id] ?? 0;
-  });
+  for (let i = 0; i < toFill; i += 1) {
+    const seat = seats[i];
+    if (seat) loads[seat.id] = averageKg;
+  }
 
   return loads;
 }

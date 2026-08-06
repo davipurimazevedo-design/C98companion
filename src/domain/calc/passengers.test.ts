@@ -116,25 +116,40 @@ describe('distribuição pela média', () => {
     C98_PASSENGER_STATIONS.escalonada,
   );
 
-  it('reparte igualmente entre os assentos', () => {
-    const loads = distributeBySeats(450, seats);
-    /* 450 kg em nove assentos: 50 kg em cada. */
-    expect(Object.keys(loads)).toHaveLength(9);
-    expect(loads['s4']).toBeCloseTo(50, 6);
-    expect(loads['s11']).toBeCloseTo(50, 6);
+  /**
+   * Trava do defeito relatado em produção: "distribuir pela média" dividia o
+   * peso TOTAL pelos NOVE assentos instalados, e não pelos passageiros
+   * informados — 4 passageiros a 90 kg viravam 40 kg em cada um dos 9
+   * assentos, em vez de 90 kg em 4 assentos e os outros cinco vazios.
+   */
+  it('preenche exatamente a quantidade informada, com o peso médio', () => {
+    const loads = distributeBySeats(4, 90, seats);
+
+    expect(Object.keys(loads)).toHaveLength(4);
+    expect(Object.values(loads)).toEqual([90, 90, 90, 90]);
   });
 
-  it('a soma fecha com o total mesmo com sobra de arredondamento', () => {
-    /* 100 kg em nove assentos não dá número redondo: o último absorve a sobra
-       para que a soma continue sendo exatamente o que o piloto pediu. */
-    const loads = distributeBySeats(100, seats);
-    const total = Object.values(loads).reduce((sum, kg) => sum + kg, 0);
-    expect(total).toBeCloseTo(100, 6);
+  it('preenche pela ordem física dianteiro a traseiro', () => {
+    /* s4 e s5 (braço 173,9) vêm antes de s3 (189,9) na lista — são os dois
+       assentos mais à frente entre os traseiros. */
+    const loads = distributeBySeats(2, 90, seats);
+    expect(Object.keys(loads)).toEqual(['s4', 's5']);
+  });
+
+  it('assentos além da quantidade não entram no resultado', () => {
+    const loads = distributeBySeats(4, 90, seats);
+    expect(loads['s6']).toBeUndefined();
+    expect(loads['s11']).toBeUndefined();
+  });
+
+  it('mais passageiros que assentos não inventa um décimo lugar', () => {
+    const loads = distributeBySeats(20, 90, seats);
+    expect(Object.keys(loads)).toHaveLength(seats.length);
   });
 
   it('nada a distribuir devolve vazio', () => {
-    expect(distributeBySeats(0, seats)).toEqual({});
-    expect(distributeBySeats(-10, seats)).toEqual({});
-    expect(distributeBySeats(100, [])).toEqual({});
+    expect(distributeBySeats(0, 90, seats)).toEqual({});
+    expect(distributeBySeats(-10, 90, seats)).toEqual({});
+    expect(distributeBySeats(4, 90, [])).toEqual({});
   });
 });

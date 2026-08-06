@@ -44,8 +44,8 @@ interface PassengersSectionProps {
   readonly onSelectCrew: () => void;
   readonly onChangeLoad: (seatId: string, text: string) => void;
   readonly onChangeCount: (text: string) => void;
-  /** Distribui um peso total pelos assentos. */
-  readonly onDistribute: (totalKg: number) => void;
+  /** Embarca a quantidade informada, um passageiro por assento, pela média. */
+  readonly onDistribute: (count: number) => void;
 }
 
 export function PassengersSection({
@@ -166,7 +166,7 @@ export function PassengersSection({
         <button
           type="button"
           className={styles.average}
-          onClick={() => onDistribute(parsedCount * averageKg)}
+          onClick={() => onDistribute(parsedCount)}
         >
           Distribuir pela média: {parsedCount} × {averageKg} kg ={' '}
           {formatKg(parsedCount * averageKg)} kg
