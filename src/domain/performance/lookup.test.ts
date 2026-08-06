@@ -14,7 +14,7 @@ import {
   C98_TAKEOFF_FLAPS_0,
   C98_TAKEOFF_FLAPS_20,
 } from '../../data/performance/index.ts';
-import { describeFailure, nextAtOrAbove, readTable } from './lookup.ts';
+import { describeReadFailure, nextAtOrAbove, readTable } from './lookup.ts';
 
 /** Atalho para os casos em que a leitura tem que existir. */
 function read(
@@ -252,15 +252,15 @@ describe('acima da coluna mais quente, com a nota 6 da Figura 5-9', () => {
 describe('mensagens', () => {
   it('cada motivo tem texto próprio, com o limite publicado', () => {
     expect(
-      describeFailure({ reason: 'fora-da-tabela', axis: 'peso', publishedMax: 8750 }),
+      describeReadFailure({ reason: 'fora-da-tabela', axis: 'peso', publishedMax: 8750 }),
     ).toContain('8.750 lb');
     expect(
-      describeFailure({ reason: 'fora-da-tabela', axis: 'altitude', publishedMax: 12_000 }),
+      describeReadFailure({ reason: 'fora-da-tabela', axis: 'altitude', publishedMax: 12_000 }),
     ).toContain('12.000 ft');
     expect(
-      describeFailure({ reason: 'fora-da-tabela', axis: 'temperatura', publishedMax: 40 }),
+      describeReadFailure({ reason: 'fora-da-tabela', axis: 'temperatura', publishedMax: 40 }),
     ).toContain('40 °C');
-    expect(describeFailure({ reason: 'limite-de-temperatura' })).toContain(
+    expect(describeReadFailure({ reason: 'limite-de-temperatura' })).toContain(
       'temperatura',
     );
   });

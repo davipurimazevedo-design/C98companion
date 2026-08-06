@@ -59,3 +59,22 @@ export function lbToLitres(lb: number, densityLbPerGal: number): number {
   if (densityLbPerGal <= 0) return 0;
   return (lb / densityLbPerGal) * LITRES_PER_US_GAL;
 }
+
+/** Metros por pé. Equivalência exata, por definição. */
+export const METRES_PER_FOOT = 0.3048;
+
+/**
+ * Converte metros em pés.
+ *
+ * As cartas brasileiras publicam o comprimento de pista em metros; as tabelas
+ * de performance do manual estão em pés. A conversão acontece uma vez só, na
+ * borda entre o que o piloto digita e o cálculo.
+ */
+export function metresToFeet(metres: number): number {
+  return metres / METRES_PER_FOOT;
+}
+
+/** Converte pés em metros. Usado apenas para exibição auxiliar. */
+export function feetToMetres(feet: number): number {
+  return feet * METRES_PER_FOOT;
+}

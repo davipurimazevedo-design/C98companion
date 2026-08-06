@@ -20,3 +20,17 @@
  * >>> Se a unidade tiver peso padrão normatizado, ele prevalece sobre este. <<<
  */
 export const AVERAGE_PASSENGER_KG = 90;
+
+/**
+ * Percentual da pista a partir do qual a margem passa a ser sinalizada como
+ * crítica, na tela de Performance.
+ *
+ * O POH NÃO publica esse critério: ele diz qual distância a aeronave exige, e
+ * para. Decidir quanta sobra é pouca é decisão de emprego — aqui, consumir
+ * mais de 80% da pista disponível acende o amarelo, e ultrapassar os 100%
+ * acende o vermelho.
+ *
+ * A tela informa que este número não vem do manual, para que ninguém o
+ * confunda com um limite publicado.
+ */
+export const RUNWAY_CRITICAL_USED_PCT = 80;

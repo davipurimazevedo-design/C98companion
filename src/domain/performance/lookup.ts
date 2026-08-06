@@ -176,7 +176,7 @@ export function readTable(table: DistanceTable, query: TableQuery): Reading {
 }
 
 /** Mensagem em português para exibir no lugar do resultado. */
-export function describeFailure(failure: ReadFailure): string {
+export function describeReadFailure(failure: ReadFailure): string {
   if (failure.reason === 'limite-de-temperatura') {
     return 'O manual não publica distância para esta combinação: os limites de temperatura da aeronave seriam excedidos.';
   }
