@@ -1,6 +1,6 @@
 {
   "name": "planejador-c98",
-  "version": "0.3.0",
+  "version": "0.3.1",
   "description": "Calculo de disponibilidade de peso - C-98 Caravan (FAB)",
   "scripts": {
     "dev": "vite",

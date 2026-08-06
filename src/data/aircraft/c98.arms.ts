@@ -25,6 +25,22 @@ export const CREW_ARM_IN = 135.5;
 export const FRONT_CREW_SEATS = 2;
 
 /**
+ * Quantos tripulantes ALÉM dos dianteiros ocupam assento da cabine mesmo com
+ * o peso ainda em branco.
+ *
+ * Hoje é 1: o Mecânico, terceiro da lista e fixo desde o rascunho inicial por
+ * decisão do esquadrão — toda missão leva um, e o assento 4 fica reservado a
+ * ele desde a primeira tela.
+ *
+ * Do quarto tripulante em diante, o assento só é reservado quando o peso for
+ * de fato lançado. Um "Segundo Mecânico" acrescentado e deixado em branco não
+ * representa ninguém a bordo, e não pode empurrar um passageiro real para um
+ * assento mais traseiro — isso deslocaria o centro de gravidade sem nenhum
+ * peso justificando o deslocamento.
+ */
+export const ALWAYS_SEATED_EXTRA_CREW = 1;
+
+/**
  * Fórmula de índice do manifesto de carga, página 6-15.
  *
  * Não é usada no cálculo do aplicativo — que trabalha com momento direto, mais

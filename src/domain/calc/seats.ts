@@ -10,7 +10,10 @@
  * consumidor precise fazer a costura.
  */
 
-import { FRONT_CREW_SEATS } from '../../data/aircraft/c98.arms.ts';
+import {
+  ALWAYS_SEATED_EXTRA_CREW,
+  FRONT_CREW_SEATS,
+} from '../../data/aircraft/c98.arms.ts';
 import {
   armOfSeat,
   type CabinSeat,
@@ -105,12 +108,23 @@ export interface CrewSeatPlan {
  * O braço errado de um tripulante desloca o CG calculado sem nenhum aviso na
  * tela — por isso esta função existe como um ponto único, testado, em vez de
  * cada consumidor calcular "quem senta onde" à sua maneira.
+ *
+ * Tripulante com peso EM BRANCO só reserva assento se for um dos fixos (ver
+ * `ALWAYS_SEATED_EXTRA_CREW`). Um "Segundo Mecânico" acrescentado e não
+ * preenchido não representa ninguém a bordo: deixá-lo consumir um assento
+ * empurraria um passageiro real para trás e deslocaria o CG sem que houvesse
+ * peso nenhum explicando o deslocamento na tela.
  */
 export function assignCrewSeats(
   crew: readonly CrewMember[],
   seats: readonly SeatSlot[],
 ): CrewSeatPlan {
-  const extra = crew.slice(FRONT_CREW_SEATS);
+  const extra = crew
+    .slice(FRONT_CREW_SEATS)
+    .filter(
+      (member, index) =>
+        index < ALWAYS_SEATED_EXTRA_CREW || member.weightKg > 0,
+    );
   const assignments: CrewSeatAssignment[] = [];
   const unseated: CrewMember[] = [];
 
