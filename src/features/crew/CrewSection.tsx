@@ -1,15 +1,15 @@
 /**
  * Tripulação.
  *
- * Piloto e copiloto são fixos — estão em praticamente toda missão e removê-los
- * não faria sentido. Os demais tripulantes são acrescentados conforme a
- * necessidade e podem ser removidos num toque.
+ * Piloto, copiloto e mecânico são fixos — toda missão leva os três, e
+ * removê-los não faria sentido. Os demais tripulantes são acrescentados
+ * conforme a necessidade e podem ser removidos num toque.
  *
- * Cada tripulante extra está travado a um assento da cabine (decisão do
- * esquadrão: o Mecânico sempre no assento 4, e daí em diante o próximo
- * assento na ordem física — ver `assignCrewSeats`). A dica de cada linha
- * mostra qual, para que o peso lançado aqui já explique onde ele pesa na
- * centragem, sem precisar abrir o mapa da cabine para conferir.
+ * O mecânico e qualquer tripulante além dele estão travados a um assento da
+ * cabine (decisão do esquadrão: o Mecânico sempre no assento 4, e daí em
+ * diante o próximo assento na ordem física — ver `assignCrewSeats`). A dica
+ * de cada linha mostra qual, para que o peso lançado aqui já explique onde
+ * ele pesa na centragem, sem precisar abrir o mapa da cabine para conferir.
  */
 
 import type { CrewSeatAssignment } from '../../domain/calc/index.ts';
@@ -21,8 +21,11 @@ import { WeightInput } from '../../ui/components/WeightInput.tsx';
 import { fieldError } from '../../ui/fieldError.ts';
 import { formatKg, formatLb } from '../../utils/format.ts';
 
-/** Posições fixas: as duas primeiras linhas não podem ser removidas. */
-const FIXED_ROWS = 2;
+/**
+ * Posições fixas: piloto, copiloto e mecânico não podem ser removidos — toda
+ * missão leva os três.
+ */
+const FIXED_ROWS = 3;
 
 interface CrewSectionProps {
   readonly crew: readonly CrewDraft[];
@@ -55,7 +58,9 @@ export function CrewSection({
       {crew.map((member, index) => {
         const error = fieldError(member.weight, MAX_INPUT_KG);
         const removable = index >= FIXED_ROWS;
-        const seat = removable ? seatOf(member.id) : undefined;
+        /* O mecânico já está travado a um assento mesmo sendo fixo — a dica
+           não depende de ser removível, só de ter assignCrewSeats o alcançado. */
+        const seat = seatOf(member.id);
 
         return (
           <FieldRow

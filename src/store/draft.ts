@@ -80,8 +80,10 @@ export function parsePassengerCount(text: string): number | null {
 /**
  * Tripulação inicial.
  *
- * Piloto e copiloto já aparecem porque estão presentes em praticamente toda
- * missão — poupa dois toques no caso mais comum.
+ * Piloto, copiloto e mecânico já aparecem porque toda missão leva os três —
+ * poupa três toques no caso normal, e o mecânico entra travado ao assento 4
+ * da cabine (ver `assignCrewSeats`) desde a primeira tela, sem precisar de
+ * "+ Adicionar tripulante".
  */
 export function initialDraft(aircraftId: string): PlanDraft {
   return {
@@ -91,6 +93,7 @@ export function initialDraft(aircraftId: string): PlanDraft {
     crew: [
       { id: 'piloto', role: 'Piloto', weight: '' },
       { id: 'copiloto', role: 'Copiloto', weight: '' },
+      { id: 'mecanico', role: 'Mecânico', weight: '' },
     ],
     passengerLoads: {},
     passengerCount: '',
@@ -102,25 +105,25 @@ export function initialDraft(aircraftId: string): PlanDraft {
 }
 
 /**
- * Funções sugeridas ao acrescentar tripulantes, na ordem de uso.
- *
- * Vale para os que entram DEPOIS de piloto e copiloto, que já vêm no rascunho
- * inicial. Esgotada a lista, a numeração continua genérica.
+ * Funções sugeridas ao acrescentar tripulantes ALÉM dos três fixos, na ordem
+ * de uso. Esgotada a lista, a numeração continua genérica.
  */
-export const EXTRA_CREW_ROLES = ['Mecânico', 'Segundo Mecânico'] as const;
+export const EXTRA_CREW_ROLES = ['Segundo Mecânico'] as const;
 
 /**
  * Função sugerida para o próximo tripulante.
  *
- * @param currentRoles Funções já a bordo, incluindo piloto e copiloto.
+ * @param currentRoles Funções já a bordo, incluindo piloto, copiloto e mecânico.
  *
  * Duas regras, nesta ordem:
  *
  * 1. A primeira função da lista que ainda não está a bordo. Assim, remover o
- *    Mecânico e acrescentar de novo devolve "Mecânico", e não um número.
- * 2. Esgotada a lista, numeração contando a tripulação INTEIRA — o quinto a
- *    bordo é "Tripulante 5", não "Tripulante 3". É como o piloto lê a lista:
- *    piloto e copiloto também são tripulantes, ainda que tenham nome próprio.
+ *    Segundo Mecânico e acrescentar de novo devolve "Segundo Mecânico", e não
+ *    um número.
+ * 2. Esgotada a lista, numeração contando a tripulação INTEIRA — o sexto a
+ *    bordo é "Tripulante 6", não "Tripulante 3". É como o piloto lê a lista:
+ *    piloto, copiloto e mecânico também são tripulantes, ainda que tenham
+ *    nome próprio.
  *
  * Nenhum nome se repete. Repetir seria pior do que numerar feio: duas linhas
  * "Tripulante 6" numa lista de pesos convidam a lançar o peso na errada.

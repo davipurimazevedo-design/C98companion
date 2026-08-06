@@ -28,8 +28,14 @@ const KEY = 'planejador-c98:rascunho';
  * assentos) para assento (`s4`, `s5`). Ler um rascunho da versão 5 colocaria o
  * peso de dois passageiros num assento só, deslocando a centragem em silêncio.
  * Descartar e recomeçar é o comportamento correto.
+ *
+ * A versão 7 tornou o Mecânico tripulante fixo, terceiro da lista desde
+ * `initialDraft`. Um rascunho da versão 6 tem só dois tripulantes; ler esse
+ * formato faria "+ Adicionar tripulante" sugerir "Segundo Mecânico" sem nunca
+ * ter existido um primeiro — a lista `EXTRA_CREW_ROLES` não inclui mais
+ * "Mecânico", porque ele deixou de vir desse caminho.
  */
-const VERSION = 6;
+const VERSION = 7;
 
 interface Envelope {
   readonly version: number;

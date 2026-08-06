@@ -50,3 +50,4 @@ selo num `0.x` se a validação vier antes de qualquer motivo para subir para
 | 0.2.0 | Mapa tocável da aeronave (assentos, pod, zonas), funções corretas de tripulação, seções de carga separadas, conferência em quilogramas, rodapé de procedência, selo Beta |
 | 0.2.1 | Correção: "Distribuir pela média" dividia o peso total pelos assentos instalados, e não pela quantidade de passageiros informada |
 | 0.2.2 | Correção: tripulantes extras (Mecânico e além) usavam o braço dianteiro fixo no cálculo de momento, e não o do assento da cabine que de fato ocupam. Mecânico travado ao assento 4, próximos tripulantes aos seguintes; assentos de passageiro e a estimativa de quantos cabem descontam os que a tripulação ocupou |
+| 0.3.0 | Mecânico vira tripulante fixo, como piloto e copiloto: presente desde o início, sem precisar de "+ Adicionar tripulante", e sem botão de remover. Toda missão passa a ter 8 assentos de passageiro por padrão, refletindo o assento 4 já reservado |
