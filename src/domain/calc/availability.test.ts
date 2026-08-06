@@ -1,6 +1,10 @@
 import { describe, expect, it } from 'vitest';
 
 import { C98 } from '../../data/aircraft/index.ts';
+import {
+  C98_CABIN_SEATS,
+  C98_PASSENGER_STATIONS,
+} from '../../data/aircraft/c98.seats.ts';
 import { crew, makePlan } from './__fixtures__/plan.ts';
 import { pendingProfile, realProfile } from './__fixtures__/profile.ts';
 import {
@@ -8,10 +12,15 @@ import {
   computeAvailability,
   computeTotalWeight,
 } from './availability.ts';
+import { resolveSeats } from './seats.ts';
 import { computeTotals } from './totals.ts';
 
+const SEATS = resolveSeats(
+  C98_CABIN_SEATS.escalonada,
+  C98_PASSENGER_STATIONS.escalonada,
+);
 const totalsOf = (plan: Parameters<typeof computeTotals>[0]) =>
-  computeTotals(plan, C98.positions);
+  computeTotals(plan, C98.positions, SEATS);
 
 describe('disponibilidade sem a ficha de pesagem', () => {
   const profile = pendingProfile();
@@ -48,7 +57,7 @@ describe('disponibilidade com peso básico de 5.000 LB', () => {
     const totals = totalsOf(
       makePlan({
         crew: [crew('1', 80), crew('2', 75)],
-        passengerLoads: { p45: 160 },
+        passengerLoads: { s4: 160 },
         positionLoads: { 'zona-2': 200 },
         fuelLb: 1000,
       }),

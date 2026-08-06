@@ -16,6 +16,15 @@
 export const CREW_ARM_IN = 135.5;
 
 /**
+ * Quantos tripulantes usam o braço dianteiro fixo antes de a tripulação
+ * passar a ocupar assentos da cabine.
+ *
+ * São os dois assentos 1 e 2, exclusivos de piloto e copiloto — nunca de um
+ * tripulante extra, mesmo que a aeronave leve só um deles a bordo.
+ */
+export const FRONT_CREW_SEATS = 2;
+
+/**
  * Fórmula de índice do manifesto de carga, página 6-15.
  *
  * Não é usada no cálculo do aplicativo — que trabalha com momento direto, mais

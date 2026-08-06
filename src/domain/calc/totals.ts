@@ -9,10 +9,17 @@
  *
  * Recebe a lista de posições apenas para saber quais pertencem à cabine e quais
  * ao cargo pod, já que cada grupo tem limite próprio.
+ *
+ * Recebe também os assentos disponíveis para PASSAGEIRO — não todos os
+ * assentos instalados. Um tripulante extra pode ter ocupado um deles (ver
+ * `assignCrewSeats`); o peso dele já está em `crewKg`, e somar de novo por
+ * `passengerLoads` contaria o mesmo tripulante duas vezes se sobrasse algum
+ * valor lançado naquele assento antes de ele virar da tripulação.
  */
 
 import type { LoadPosition } from '../../data/aircraft/types.ts';
 import type { MissionPlan } from '../models/plan.ts';
+import type { SeatSlot } from './seats.ts';
 import { kgToLb, sumKgToLb, sumLb } from './units.ts';
 
 export interface LoadTotals {
@@ -42,6 +49,7 @@ export interface LoadTotals {
 export function computeTotals(
   plan: MissionPlan,
   positions: readonly LoadPosition[],
+  passengerSeats: readonly SeatSlot[],
 ): LoadTotals {
   const crewKg = plan.crew.reduce((total, member) => total + member.weightKg, 0);
   const crewLb = sumKgToLb(plan.crew.map((member) => member.weightKg));
@@ -56,8 +64,8 @@ export function computeTotals(
     positions.filter((p) => p.group === 'pod').map(loadOf),
   );
 
-  const passengerKg = Object.values(plan.passengerLoads).reduce(
-    (total, weight) => total + weight,
+  const passengerKg = passengerSeats.reduce(
+    (total, seat) => total + (plan.passengerLoads[seat.id] ?? 0),
     0,
   );
   const passengerLb = kgToLb(passengerKg);

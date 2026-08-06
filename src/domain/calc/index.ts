@@ -34,7 +34,7 @@ import {
   computePassengerCapacity,
   type PassengerCapacity,
 } from './passengers.ts';
-import { resolveSeats, type SeatSlot } from './seats.ts';
+import { assignCrewSeats, resolveSeats, type CrewSeatPlan, type SeatSlot } from './seats.ts';
 import { deriveSituation, type SituationLevel } from './status.ts';
 import { computeTotals, type LoadTotals } from './totals.ts';
 import { buildVerdict, type Verdict } from './verdict.ts';
@@ -42,8 +42,14 @@ import { buildVerdict, type Verdict } from './verdict.ts';
 export interface PlanResult {
   /** Posições realmente disponíveis nesta aeronave. */
   readonly positions: readonly LoadPosition[];
-  /** Assentos de passageiro desta aeronave, com braço e lado resolvidos. */
+  /** Todos os assentos da cabine, com braço e lado resolvidos. */
   readonly seats: readonly SeatSlot[];
+  /**
+   * Como piloto, copiloto, tripulantes extras e passageiros se repartem entre
+   * os assentos. `crewSeatPlan.passengerSeats` é a lista que sobrou para
+   * passageiro — a que a tela deve usar para lançar e distribuir peso.
+   */
+  readonly crewSeatPlan: CrewSeatPlan;
   /** Somatórios do carregamento. Sempre disponíveis. */
   readonly totals: LoadTotals;
   /** Peso total, disponível, percentual e margem. */
@@ -76,13 +82,20 @@ export function computePlanResult(
     cabinSeatsFor(profile),
     passengerStationsFor(profile),
   );
-  const totals = computeTotals(plan, positions);
+  /* Quem senta onde: piloto e copiloto no braço dianteiro, tripulantes extras
+     (Mecânico, Segundo Mecânico...) nos assentos seguintes da cabine, na
+     ordem física, e só o que sobra fica disponível para passageiro. */
+  const crewSeatPlan = assignCrewSeats(plan.crew, seatSlots);
+
+  const totals = computeTotals(plan, positions, crewSeatPlan.passengerSeats);
   const availability = computeAvailability(totals, profile);
   const additionalFuel = computeAdditionalFuel(totals, profile);
   const limits = evaluateLimits(plan, totals, profile, positions);
   const missingData = describeMissingData(profile);
 
-  const seats = profile.registration.passengerSeats;
+  /* Assentos DISPONÍVEIS para passageiro, não os instalados na aeronave: um
+     tripulante extra a bordo ocupa um lugar que deixa de contar aqui. */
+  const seats = crewSeatPlan.passengerSeats.length;
   const capacity = computePassengerCapacity({
     availableLb: isReady(availability) ? availability.value.availableLb : 0,
     seats,
@@ -95,7 +108,7 @@ export function computePlanResult(
       : Math.max(0, plan.passengerCount - seats);
 
   /* Centragem: só existe quando o momento básico da matrícula está cadastrado. */
-  const moment = computeMoment(plan, profile, positions, seatSlots);
+  const moment = computeMoment(plan, profile, positions, crewSeatPlan);
   const cg = isReady(moment)
     ? computeCg(moment.value.takeoffWeightLb, moment.value.takeoffMoment1000)
     : null;
@@ -111,6 +124,7 @@ export function computePlanResult(
   return {
     positions,
     seats: seatSlots,
+    crewSeatPlan,
     totals,
     availability,
     additionalFuel,
@@ -143,8 +157,8 @@ export function computePlanResult(
 
 export { limitOf } from './limits.ts';
 export { computePassengerCapacity, distributeBySeats } from './passengers.ts';
-export { resolveSeats, stationLoadKg } from './seats.ts';
-export type { SeatSlot } from './seats.ts';
+export { assignCrewSeats, resolveSeats, stationLoadKg } from './seats.ts';
+export type { CrewSeatAssignment, CrewSeatPlan, SeatSlot } from './seats.ts';
 export { computeMoment, fuelMoment1000 } from './moment.ts';
 export {
   computeCg,

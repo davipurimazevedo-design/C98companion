@@ -5,13 +5,20 @@
  * cauda à direita, e tudo posicionado pela estação em polegadas. O contorno é
  * ilustrativo; as COTAS é que são do manual.
  *
- * Só assentos. As zonas de carga do piso pertencem à seção Carga, que tem o
- * próprio desenho — repeti-las aqui competia com os assentos numa tela em que
- * o que se decide é onde as pessoas sentam.
+ * Três tipos de assento, todos na mesma régua:
+ *
+ *   PILOTO/COPILOTO — braço dianteiro fixo, sempre nos dois primeiros lugares.
+ *   TRIPULANTE EXTRA — Mecânico e além, travados a um assento da cabine (ver
+ *                       `assignCrewSeats`). Aparecem como os dianteiros —
+ *                       tracejado, peso lançado na seção Tripulação — porque
+ *                       não são passageiro: não se toca aqui para mudar quem
+ *                       é, só se confere onde sentam.
+ *   PASSAGEIRO — o que sobrou depois da tripulação. Só estes aceitam toque
+ *                para embarcar ou editar.
  */
 
+import type { CrewSeatAssignment, SeatSlot } from '../../domain/calc/index.ts';
 import { CREW_ARM_IN } from '../../data/aircraft/c98.arms.ts';
-import type { SeatSlot } from '../../domain/calc/index.ts';
 import { SeatButton } from './SeatButton.tsx';
 import { percentOfStation } from './stationScale.ts';
 import styles from './TopView.module.css';
@@ -23,14 +30,17 @@ export interface CrewSeatCell {
 }
 
 interface TopViewProps {
+  /** Todos os assentos da cabine, ocupados ou não por tripulação extra. */
   readonly seats: readonly SeatSlot[];
-  /** Peso lançado em cada assento, em quilogramas. */
+  /** Peso lançado em cada assento de PASSAGEIRO, em quilogramas. */
   readonly weightsKg: Readonly<Record<string, number>>;
   readonly selectedSeatId: string | null;
   readonly onSelectSeat: (seatId: string) => void;
   /** Piloto e copiloto, nesta ordem. */
   readonly crew: readonly CrewSeatCell[];
-  /** Leva à seção Tripulação ao tocar um dos assentos dianteiros. */
+  /** Tripulantes extras já travados a um assento da cabine. */
+  readonly extraCrew: readonly CrewSeatAssignment[];
+  /** Leva à seção Tripulação ao tocar um assento de tripulação. */
   readonly onSelectCrew: () => void;
 }
 
@@ -62,11 +72,17 @@ export function TopView({
   selectedSeatId,
   onSelectSeat,
   crew,
+  extraCrew,
   onSelectCrew,
 }: TopViewProps) {
   /* Quantos assentos já foram desenhados na mesma estação e do mesmo lado —
-     é o que decide se este vai na janela ou no corredor. */
+     é o que decide se este vai na janela ou no corredor. Roda sobre TODOS os
+     assentos, tripulação e passageiro juntos, para que travar um assento à
+     tripulação não desloque a posição dos demais. */
   const seen = new Map<string, number>();
+  const extraCrewBySeatId = new Map(
+    extraCrew.map((assignment) => [assignment.seat.id, assignment]),
+  );
 
   return (
     <div className={styles.frame}>
@@ -96,6 +112,28 @@ export function TopView({
           const index = seen.get(key) ?? 0;
           seen.set(key, index + 1);
 
+          const position = {
+            left: percentOfStation(seat.armIn),
+            top: rowOf(seat, index),
+          };
+
+          const assignment = extraCrewBySeatId.get(seat.id);
+          if (assignment) {
+            const occupied = assignment.weightKg > 0;
+            return (
+              <button
+                key={seat.id}
+                type="button"
+                className={`${styles.crewSeat} ${occupied ? styles.crewOccupied : ''}`}
+                style={position}
+                aria-label={`${assignment.crewRole}, ${seat.label}, lançado na seção Tripulação`}
+                onClick={onSelectCrew}
+              >
+                {seat.number}
+              </button>
+            );
+          }
+
           return (
             <SeatButton
               key={seat.id}
@@ -103,10 +141,7 @@ export function TopView({
               number={seat.number}
               weightKg={weightsKg[seat.id] ?? 0}
               selected={selectedSeatId === seat.id}
-              style={{
-                left: percentOfStation(seat.armIn),
-                top: rowOf(seat, index),
-              }}
+              style={position}
               onClick={() => onSelectSeat(seat.id)}
             />
           );

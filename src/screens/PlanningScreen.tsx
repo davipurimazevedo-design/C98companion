@@ -172,6 +172,7 @@ export function PlanningScreen() {
             crew={draft.crew}
             totalKg={totals.crewKg}
             totalLb={totals.crewLb}
+            extraCrew={result.crewSeatPlan.assignments}
             onChangeWeight={setCrewWeight}
             onAdd={addCrewMember}
             onRemove={removeCrewMember}
@@ -180,15 +181,17 @@ export function PlanningScreen() {
 
         <PassengersSection
           seats={result.seats}
+          passengerSeats={result.crewSeatPlan.passengerSeats}
           canDrawMap={canDrawCabinMap(profile)}
           loads={draft.passengerLoads}
           count={draft.passengerCount}
           parsedCount={plan.passengerCount}
-          seatCount={profile.registration.passengerSeats}
+          seatCount={result.crewSeatPlan.passengerSeats.length}
           averageKg={AVERAGE_PASSENGER_KG}
           totalKg={totals.passengerKg}
           totalLb={totals.passengerLb}
           crew={crewCells}
+          extraCrew={result.crewSeatPlan.assignments}
           onSelectCrew={() =>
             crewRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' })
           }
@@ -198,7 +201,7 @@ export function PlanningScreen() {
             const spread = distributeBySeats(
               count,
               AVERAGE_PASSENGER_KG,
-              result.seats,
+              result.crewSeatPlan.passengerSeats,
             );
             const asText: Record<string, string> = {};
             for (const [id, kg] of Object.entries(spread)) {

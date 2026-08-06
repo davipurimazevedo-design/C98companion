@@ -11,12 +11,12 @@
  */
 
 import type { AircraftProfile, LoadPosition } from '../../data/aircraft/types.ts';
-import { CREW_ARM_IN } from '../../data/aircraft/c98.arms.ts';
+import { CREW_ARM_IN, FRONT_CREW_SEATS } from '../../data/aircraft/c98.arms.ts';
 import type { FuelMomentRow } from '../../data/aircraft/c98.fuelMoment.ts';
 import { isPresent } from '../../data/pending.ts';
 import type { MissionPlan } from '../models/plan.ts';
 import { pending, ready, type Outcome } from './outcome.ts';
-import type { SeatSlot } from './seats.ts';
+import type { CrewSeatPlan } from './seats.ts';
 import { kgToLb } from './units.ts';
 
 /** Uma linha do cálculo de momento, espelhando o manifesto do manual. */
@@ -104,7 +104,7 @@ export function computeMoment(
   plan: MissionPlan,
   profile: AircraftProfile,
   positions: readonly LoadPosition[],
-  seats: readonly SeatSlot[],
+  crewSeatPlan: CrewSeatPlan,
 ): Outcome<MomentReport> {
   const { basicEmptyWeightLb, basicMoment } = profile.registration;
 
@@ -135,8 +135,8 @@ export function computeMoment(
     moment1000: fuelMoment1000(fuelLb, profile.model.fuelMoments),
   });
 
-  /* 3 e 4 — Tripulação nos assentos dianteiros. */
-  for (const member of plan.crew) {
+  /* 3 e 4 — Piloto e copiloto, assentos dianteiros fixos (página 6-44). */
+  for (const member of plan.crew.slice(0, FRONT_CREW_SEATS)) {
     const weightLb = kgToLb(member.weightKg);
     lines.push({
       label: member.role,
@@ -146,11 +146,35 @@ export function computeMoment(
     });
   }
 
-  /* 5 — Passageiros traseiros, assento a assento.
-     Assentos da mesma estação têm o mesmo braço, então somar por assento dá
-     exatamente o mesmo momento que somar por estação — só permite lançar o
-     peso real de cada pessoa. */
-  for (const seat of seats) {
+  /* 3b — Tripulantes extras, sentados na cabine: o braço é o do assento que
+     ocupam fisicamente (ver `assignCrewSeats`), não o dianteiro. Um mecânico
+     no assento 4 desloca o CG de onde ele de fato está. */
+  for (const assignment of crewSeatPlan.assignments) {
+    const weightLb = kgToLb(assignment.weightKg);
+    lines.push({
+      label: assignment.crewRole,
+      weightLb,
+      armIn: assignment.seat.armIn,
+      moment1000: moment1000Of(weightLb, assignment.seat.armIn),
+    });
+  }
+  /* Caso extremo: tripulante extra sem assento sobrando na cabine. Mantido
+     no braço dianteiro como aproximação, para que o peso nunca suma. */
+  for (const member of crewSeatPlan.unseated) {
+    const weightLb = kgToLb(member.weightKg);
+    lines.push({
+      label: member.role,
+      weightLb,
+      armIn: CREW_ARM_IN,
+      moment1000: moment1000Of(weightLb, CREW_ARM_IN),
+    });
+  }
+
+  /* 5 — Passageiros traseiros, assento a assento — só os assentos que
+     sobraram depois da tripulação extra. Assentos da mesma estação têm o
+     mesmo braço, então somar por assento dá exatamente o mesmo momento que
+     somar por estação — só permite lançar o peso real de cada pessoa. */
+  for (const seat of crewSeatPlan.passengerSeats) {
     const weightKg = plan.passengerLoads[seat.id] ?? 0;
     if (weightKg === 0) continue;
 

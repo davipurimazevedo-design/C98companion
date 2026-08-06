@@ -5,8 +5,13 @@ import {
   getProfile,
 } from '../../data/aircraft/index.ts';
 import { crew, makePlan } from './__fixtures__/plan.ts';
-import { pendingProfile, realProfile } from './__fixtures__/profile.ts';
+import {
+  pendingProfile,
+  realProfile,
+  TEST_BEW_LB,
+} from './__fixtures__/profile.ts';
 import { computePlanResult } from './index.ts';
+import { kgToLb } from './units.ts';
 
 /**
  * Cenário de referência: 155 kg de tripulação, 160 kg de passageiros,
@@ -14,7 +19,7 @@ import { computePlanResult } from './index.ts';
  */
 const referencePlan = makePlan({
   crew: [crew('c1', 80), crew('c2', 75)],
-  passengerLoads: { p45: 160 },
+  passengerLoads: { s4: 160 },
   positionLoads: { 'zona-2': 200 },
   fuelLb: 1000,
 });
@@ -142,7 +147,7 @@ describe('FAB 2720 com os dados reais cadastrados', () => {
   });
 
   it('acusa mais passageiros do que assentos instalados', () => {
-    const plan = makePlan({ passengerLoads: { p45: 300 }, passengerCount: 11 });
+    const plan = makePlan({ passengerLoads: { s4: 300 }, passengerCount: 11 });
     const result = computePlanResult(plan, profile!);
 
     expect(result.seatOverflow).toBe(2);
@@ -155,7 +160,7 @@ describe('FAB 2720 com os dados reais cadastrados', () => {
   });
 
   it('o veredito lidera pelo problema dos assentos, não pelo peso que sobra', () => {
-    const plan = makePlan({ passengerLoads: { p45: 300 }, passengerCount: 11 });
+    const plan = makePlan({ passengerLoads: { s4: 300 }, passengerCount: 11 });
     const verdict = computePlanResult(plan, profile!).verdict;
 
     expect(verdict.headline).toBe('Há 2 passageiros a mais que assentos.');
@@ -165,7 +170,7 @@ describe('FAB 2720 com os dados reais cadastrados', () => {
 
   it('excesso de assentos sobrepõe uma situação de peso aprovada', () => {
     /* Peso folgado, mas gente demais: continua sendo problema. */
-    const plan = makePlan({ passengerLoads: { p45: 100 }, passengerCount: 12 });
+    const plan = makePlan({ passengerLoads: { s4: 100 }, passengerCount: 12 });
     const result = computePlanResult(plan, profile!);
 
     expect(result.limits.hasExceeded).toBe(false);
@@ -354,5 +359,72 @@ describe('computePlanResult com peso básico cadastrado', () => {
     const snapshot = JSON.stringify(referencePlan);
     computePlanResult(referencePlan, profile);
     expect(JSON.stringify(referencePlan)).toBe(snapshot);
+  });
+});
+
+describe('mecânico ocupando assento da cabine', () => {
+  const profile = realProfile();
+
+  const comMecanico = makePlan({
+    crew: [crew('p', 85), crew('c', 80), { id: 'm', role: 'Mecânico', weightKg: 90 }],
+  });
+
+  it('a aeronave passa a ter 8 assentos disponíveis, não 9', () => {
+    const result = computePlanResult(comMecanico, profile);
+
+    expect(result.crewSeatPlan.passengerSeats).toHaveLength(8);
+    expect(result.crewSeatPlan.assignments).toHaveLength(1);
+    expect(result.crewSeatPlan.assignments[0]?.seat.id).toBe('s4');
+    expect(result.capacity.seats).toBe(8);
+  });
+
+  it('a estimativa de quantos passageiros cabem usa os 8 assentos', () => {
+    const result = computePlanResult(comMecanico, profile);
+
+    /* Aeronave quase vazia: 8 assentos é quem sobrou, não 9. */
+    expect(result.capacity.count).toBe(8);
+    expect(result.verdict.notes[0]).toBe(
+      'Cabem 8 passageiros — limite de 8 assentos da aeronave.',
+    );
+  });
+
+  it('o peso do mecânico entra no total, sem duplicar', () => {
+    const result = computePlanResult(comMecanico, profile);
+
+    expect(result.availability.status).toBe('ready');
+    if (result.availability.status !== 'ready') return;
+
+    /* Peso básico de teste (5.000 LB) + 85 + 80 + 90 kg de tripulação, sem
+       combustível nem carga. Se o mecânico entrasse duas vezes — uma como
+       tripulação, outra como um passageiro fantasma no assento 4 — o total
+       ficaria 90 kg (≈ 198 LB) acima disto. */
+    const crewLb = kgToLb(85 + 80 + 90);
+    expect(result.availability.value.totalWeightLb).toBeCloseTo(
+      TEST_BEW_LB + crewLb,
+      2,
+    );
+  });
+
+  it('o momento do mecânico usa o braço do assento 4', () => {
+    const result = computePlanResult(comMecanico, profile);
+
+    expect(result.moment.status).toBe('ready');
+    if (result.moment.status !== 'ready') return;
+
+    const linha = result.moment.value.lines.find(
+      (l) => l.label === 'Mecânico',
+    );
+    expect(linha?.armIn).toBeCloseTo(173.9, 6);
+  });
+
+  it('nono passageiro com o mecânico a bordo excede os assentos', () => {
+    /* 9 passageiros contra só 8 assentos disponíveis: o mecânico ocupou um. */
+    const plan = makePlan({ ...comMecanico, passengerCount: 9 });
+    const result = computePlanResult(plan, profile);
+
+    expect(result.seatOverflow).toBe(1);
+    expect(result.level).toBe('crit');
+    const alert = result.alerts.find((item) => item.id === 'seats');
+    expect(alert?.detail).toContain('A aeronave tem 8 lugares de passageiro.');
   });
 });

@@ -12,12 +12,19 @@
  * Quando o lado dos assentos não está confirmado para a matrícula, o mapa não
  * aparece e a lista fica aberta. Desenhar assentos em lado adivinhado seria
  * pior do que não desenhar.
+ *
+ * Nem todo assento é de passageiro. Um Mecânico a bordo trava um assento da
+ * cabine para si (ver `assignCrewSeats`, chamado uma vez em
+ * `computePlanResult`) — por isso o componente recebe DOIS conjuntos: `seats`,
+ * a lista inteira, só para o desenho saber onde cada lugar fica; e
+ * `passengerSeats`, o que sobrou, que é onde de fato se lança, edita e
+ * distribui peso de passageiro.
  */
 
 import { useState } from 'react';
 
 import { MAX_INPUT_KG } from '../../config/input.ts';
-import type { SeatSlot } from '../../domain/calc/index.ts';
+import type { CrewSeatAssignment, SeatSlot } from '../../domain/calc/index.ts';
 import { parseWeight } from '../../domain/validation/parseWeight.ts';
 import { TopView, type CrewSeatCell } from '../aircraftMap/TopView.tsx';
 import { Disclosure } from '../../ui/components/Disclosure.tsx';
@@ -29,7 +36,10 @@ import { formatKg, formatLb } from '../../utils/format.ts';
 import styles from './PassengersSection.module.css';
 
 interface PassengersSectionProps {
+  /** Todos os assentos da cabine, para o desenho — inclui os da tripulação. */
   readonly seats: readonly SeatSlot[];
+  /** Assentos que sobraram para passageiro depois da tripulação extra. */
+  readonly passengerSeats: readonly SeatSlot[];
   /** Se o lado de todos os assentos está confirmado para esta matrícula. */
   readonly canDrawMap: boolean;
   readonly loads: Readonly<Record<string, string>>;
@@ -41,6 +51,8 @@ interface PassengersSectionProps {
   readonly totalLb: number;
   /** Piloto e copiloto, para os assentos dianteiros do desenho. */
   readonly crew: readonly CrewSeatCell[];
+  /** Mecânico e além, travados a um assento da cabine. */
+  readonly extraCrew: readonly CrewSeatAssignment[];
   readonly onSelectCrew: () => void;
   readonly onChangeLoad: (seatId: string, text: string) => void;
   readonly onChangeCount: (text: string) => void;
@@ -50,6 +62,7 @@ interface PassengersSectionProps {
 
 export function PassengersSection({
   seats,
+  passengerSeats,
   canDrawMap,
   loads,
   count,
@@ -59,6 +72,7 @@ export function PassengersSection({
   totalKg,
   totalLb,
   crew,
+  extraCrew,
   onSelectCrew,
   onChangeLoad,
   onChangeCount,
@@ -73,11 +87,11 @@ export function PassengersSection({
     parseWeight(loads[seatId] ?? '', MAX_INPUT_KG).value;
 
   const weightsKg: Record<string, number> = {};
-  for (const seat of seats) {
+  for (const seat of passengerSeats) {
     weightsKg[seat.id] = weightOf(seat.id);
   }
 
-  const occupied = seats.filter((seat) => weightsKg[seat.id]! > 0).length;
+  const occupied = passengerSeats.filter((seat) => weightsKg[seat.id]! > 0).length;
 
   const subtotal =
     parsedCount === null
@@ -100,7 +114,8 @@ export function PassengersSection({
     setSelectedSeatId(seatId === selectedSeatId ? null : seatId);
   };
 
-  const selectedSeat = seats.find((seat) => seat.id === selectedSeatId) ?? null;
+  const selectedSeat =
+    passengerSeats.find((seat) => seat.id === selectedSeatId) ?? null;
   const selectedValue = selectedSeat ? (loads[selectedSeat.id] ?? '') : '';
   const selectedError = fieldError(selectedValue, MAX_INPUT_KG);
 
@@ -114,6 +129,7 @@ export function PassengersSection({
             selectedSeatId={selectedSeatId}
             onSelectSeat={handleSeat}
             crew={crew}
+            extraCrew={extraCrew}
             onSelectCrew={onSelectCrew}
           />
 
@@ -183,7 +199,7 @@ export function PassengersSection({
       )}
 
       {(listOpen || !canDrawMap) &&
-        seats.map((seat) => {
+        passengerSeats.map((seat) => {
           const value = loads[seat.id] ?? '';
           const error = fieldError(value, MAX_INPUT_KG);
           return (

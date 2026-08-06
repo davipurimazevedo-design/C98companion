@@ -13,10 +13,11 @@ import { describe, expect, it } from 'vitest';
 
 import { C98 } from '../../data/aircraft/index.ts';
 import type { AircraftProfile } from '../../data/aircraft/types.ts';
+import type { MissionPlan } from '../models/plan.ts';
 import { kgToLb, lbToKg } from './units.ts';
 import { computeMoment, fuelMoment1000 } from './moment.ts';
 import { makePlan } from './__fixtures__/plan.ts';
-import { resolveSeats } from './seats.ts';
+import { assignCrewSeats, resolveSeats } from './seats.ts';
 import {
   C98_CABIN_SEATS,
   C98_PASSENGER_STATIONS,
@@ -26,6 +27,11 @@ const SEATS = resolveSeats(
   C98_CABIN_SEATS.escalonada,
   C98_PASSENGER_STATIONS.escalonada,
 );
+
+/** Atalho: monta o plano de assentos exatamente como `computePlanResult` faz. */
+function seatPlanFor(plan: MissionPlan) {
+  return assignCrewSeats(plan.crew, SEATS);
+}
 
 /** A aeronave do exemplo: 4.575 LB de peso básico, momento 846.500 lb·pol. */
 const SAMPLE_AIRCRAFT: AircraftProfile = {
@@ -96,7 +102,12 @@ describe('tabela de momento do combustível (página 6-49)', () => {
 });
 
 describe('exemplo resolvido do manual, página 6-55', () => {
-  const outcome = computeMoment(samplePlan, SAMPLE_AIRCRAFT, C98.positions, SEATS);
+  const outcome = computeMoment(
+    samplePlan,
+    SAMPLE_AIRCRAFT,
+    C98.positions,
+    seatPlanFor(samplePlan),
+  );
 
   it('o cálculo está disponível', () => {
     expect(outcome.status).toBe('ready');
@@ -151,7 +162,12 @@ describe('momento dos passageiros por assento', () => {
   it('usa o braço da estação em que cada grupo está sentado', () => {
     /* 90 kg no assento 3 (braço 189,9) e 90 kg no assento 11 (braço 261,9). */
     const plan = makePlan({ passengerLoads: { s3: 90, s11: 90 } });
-    const outcome = computeMoment(plan, SAMPLE_AIRCRAFT, C98.positions, SEATS);
+    const outcome = computeMoment(
+      plan,
+      SAMPLE_AIRCRAFT,
+      C98.positions,
+      seatPlanFor(plan),
+    );
 
     expect(outcome.status).toBe('ready');
     if (outcome.status !== 'ready') return;
@@ -167,17 +183,19 @@ describe('momento dos passageiros por assento', () => {
   });
 
   it('o mesmo peso à frente ou atrás muda o momento', () => {
+    const planFrente = makePlan({ passengerLoads: { s4: 180 } });
+    const planFundo = makePlan({ passengerLoads: { s11: 180 } });
     const frente = computeMoment(
-      makePlan({ passengerLoads: { s4: 180 } }),
+      planFrente,
       SAMPLE_AIRCRAFT,
       C98.positions,
-      SEATS,
+      seatPlanFor(planFrente),
     );
     const fundo = computeMoment(
-      makePlan({ passengerLoads: { s11: 180 } }),
+      planFundo,
       SAMPLE_AIRCRAFT,
       C98.positions,
-      SEATS,
+      seatPlanFor(planFundo),
     );
 
     expect(frente.status).toBe('ready');
@@ -198,17 +216,19 @@ describe('momento dos passageiros por assento', () => {
    * mudança de granularidade da tela teria alterado a física.
    */
   it('assentos da mesma estação somam como o grupo publicado', () => {
+    const planJuntos = makePlan({ passengerLoads: { s4: 180 } });
+    const planSeparados = makePlan({ passengerLoads: { s4: 90, s5: 90 } });
     const juntos = computeMoment(
-      makePlan({ passengerLoads: { s4: 180 } }),
+      planJuntos,
       SAMPLE_AIRCRAFT,
       C98.positions,
-      SEATS,
+      seatPlanFor(planJuntos),
     );
     const separados = computeMoment(
-      makePlan({ passengerLoads: { s4: 90, s5: 90 } }),
+      planSeparados,
       SAMPLE_AIRCRAFT,
       C98.positions,
-      SEATS,
+      seatPlanFor(planSeparados),
     );
 
     expect(juntos.status).toBe('ready');
@@ -227,7 +247,12 @@ describe('momento dos passageiros por assento', () => {
 
   it('nenhum item fica sem momento apurável', () => {
     const plan = makePlan({ passengerLoads: { s6: 200 }, fuelLb: 500 });
-    const outcome = computeMoment(plan, SAMPLE_AIRCRAFT, C98.positions, SEATS);
+    const outcome = computeMoment(
+      plan,
+      SAMPLE_AIRCRAFT,
+      C98.positions,
+      seatPlanFor(plan),
+    );
 
     expect(outcome.status).toBe('ready');
     if (outcome.status !== 'ready') return;
@@ -239,11 +264,146 @@ describe('momento dos passageiros por assento', () => {
       model: C98,
       registration: { ...SAMPLE_AIRCRAFT.registration, basicMoment: null },
     };
-    const outcome = computeMoment(samplePlan, semFicha, C98.positions, SEATS);
+    const outcome = computeMoment(
+      samplePlan,
+      semFicha,
+      C98.positions,
+      seatPlanFor(samplePlan),
+    );
 
     expect(outcome.status).toBe('pending');
     if (outcome.status === 'pending') {
       expect(outcome.missing).toEqual(['Momento básico']);
     }
+  });
+});
+
+/**
+ * Trava do defeito relatado em produção: o Mecânico sentava fisicamente no
+ * assento 4 (braço 173,9), mas o cálculo usava o braço dianteiro fixo de
+ * 135,5 — o mesmo do piloto — para TODO tripulante, deslocando o CG sem
+ * nenhum aviso na tela.
+ */
+describe('tripulante extra ocupa assento da cabine', () => {
+  const comMecanico = makePlan({
+    crew: [
+      { id: 'p', role: 'Piloto', weightKg: 85 },
+      { id: 'c', role: 'Copiloto', weightKg: 80 },
+      { id: 'm', role: 'Mecânico', weightKg: 90 },
+    ],
+  });
+
+  it('o mecânico usa o braço do assento 4, não o dianteiro', () => {
+    const outcome = computeMoment(
+      comMecanico,
+      SAMPLE_AIRCRAFT,
+      C98.positions,
+      seatPlanFor(comMecanico),
+    );
+
+    expect(outcome.status).toBe('ready');
+    if (outcome.status !== 'ready') return;
+
+    const mecanico = outcome.value.lines.find((l) => l.label === 'Mecânico');
+    const arm4 = SEATS.find((s) => s.id === 's4')?.armIn;
+
+    expect(mecanico?.armIn).toBe(arm4);
+    expect(mecanico?.armIn).not.toBe(135.5);
+    expect(mecanico?.moment1000).toBeCloseTo((kgToLb(90) * (arm4 ?? 0)) / 1000, 6);
+  });
+
+  it('piloto e copiloto continuam no braço dianteiro', () => {
+    const outcome = computeMoment(
+      comMecanico,
+      SAMPLE_AIRCRAFT,
+      C98.positions,
+      seatPlanFor(comMecanico),
+    );
+
+    expect(outcome.status).toBe('ready');
+    if (outcome.status !== 'ready') return;
+
+    expect(outcome.value.lines.find((l) => l.label === 'Piloto')?.armIn).toBe(
+      135.5,
+    );
+    expect(outcome.value.lines.find((l) => l.label === 'Copiloto')?.armIn).toBe(
+      135.5,
+    );
+  });
+
+  it('um peso lançado antes no assento 4 não soma de novo com o mecânico', () => {
+    /* Assento 4 tinha um passageiro (90 kg) antes de o mecânico embarcar; o
+       texto pode continuar no rascunho sem que a tela ofereça mais como
+       editá-lo ali. O cálculo tem de ignorá-lo, não somar os dois. */
+    const plan = makePlan({
+      crew: comMecanico.crew,
+      passengerLoads: { s4: 90 },
+    });
+    const outcome = computeMoment(
+      plan,
+      SAMPLE_AIRCRAFT,
+      C98.positions,
+      seatPlanFor(plan),
+    );
+
+    expect(outcome.status).toBe('ready');
+    if (outcome.status !== 'ready') return;
+
+    const linhasDoAssento4 = outcome.value.lines.filter(
+      (l) => l.label === 'Assento 4',
+    );
+    expect(linhasDoAssento4).toEqual([]);
+  });
+
+  it('segundo tripulante extra ocupa o assento seguinte, o 5', () => {
+    const plan = makePlan({
+      crew: [
+        ...comMecanico.crew,
+        { id: 's', role: 'Segundo Mecânico', weightKg: 88 },
+      ],
+    });
+    const outcome = computeMoment(
+      plan,
+      SAMPLE_AIRCRAFT,
+      C98.positions,
+      seatPlanFor(plan),
+    );
+
+    expect(outcome.status).toBe('ready');
+    if (outcome.status !== 'ready') return;
+
+    const segundo = outcome.value.lines.find(
+      (l) => l.label === 'Segundo Mecânico',
+    );
+    const arm5 = SEATS.find((s) => s.id === 's5')?.armIn;
+    expect(segundo?.armIn).toBe(arm5);
+  });
+
+  it('mais tripulantes que assentos: o excedente cai no braço dianteiro', () => {
+    const extras = SEATS.map((_, i) => ({
+      id: `x${i}`,
+      role: `Tripulante ${i + 3}`,
+      weightKg: 80,
+    }));
+    const plan = makePlan({
+      crew: [
+        { id: 'p', role: 'Piloto', weightKg: 85 },
+        { id: 'c', role: 'Copiloto', weightKg: 80 },
+        ...extras,
+        { id: 'sobra', role: 'Tripulante extra', weightKg: 80 },
+      ],
+    });
+    const outcome = computeMoment(
+      plan,
+      SAMPLE_AIRCRAFT,
+      C98.positions,
+      seatPlanFor(plan),
+    );
+
+    expect(outcome.status).toBe('ready');
+    if (outcome.status !== 'ready') return;
+
+    const sobra = outcome.value.lines.find((l) => l.label === 'Tripulante extra');
+    expect(sobra?.armIn).toBe(135.5);
   });
 });

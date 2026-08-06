@@ -69,8 +69,9 @@ interface AlertInput {
   readonly limits: LimitReport;
   /** Dados ainda não cadastrados para esta aeronave. */
   readonly missingData: readonly string[];
-  /** Passageiros além dos assentos instalados. */
+  /** Passageiros além dos assentos disponíveis. */
   readonly seatOverflow: number;
+  /** Assentos disponíveis para passageiro — descontados os da tripulação extra. */
   readonly seats: number;
   /** Centragem apurada. `null` enquanto o momento básico não estiver cadastrado. */
   readonly cg: CgResult | null;

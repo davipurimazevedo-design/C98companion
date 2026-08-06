@@ -49,3 +49,4 @@ selo num `0.x` se a validação vier antes de qualquer motivo para subir para
 | 0.1.0 | Cálculo completo: peso, limites, combustível, centragem, unidades alternativas |
 | 0.2.0 | Mapa tocável da aeronave (assentos, pod, zonas), funções corretas de tripulação, seções de carga separadas, conferência em quilogramas, rodapé de procedência, selo Beta |
 | 0.2.1 | Correção: "Distribuir pela média" dividia o peso total pelos assentos instalados, e não pela quantidade de passageiros informada |
+| 0.2.2 | Correção: tripulantes extras (Mecânico e além) usavam o braço dianteiro fixo no cálculo de momento, e não o do assento da cabine que de fato ocupam. Mecânico travado ao assento 4, próximos tripulantes aos seguintes; assentos de passageiro e a estimativa de quantos cabem descontam os que a tripulação ocupou |

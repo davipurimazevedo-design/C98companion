@@ -60,7 +60,10 @@ export interface PassengerCapacity {
   readonly averageLb: number;
   /** Quantos caberiam considerando apenas o peso disponível. */
   readonly byWeight: number;
-  /** Assentos de passageiro instalados. */
+  /**
+   * Assentos disponíveis para passageiro — os instalados, menos os que a
+   * tripulação extra (Mecânico e além) estiver ocupando na cabine.
+   */
   readonly seats: number;
   /** Assentos livres. `null` quando a quantidade a bordo não foi informada. */
   readonly freeSeats: number | null;

@@ -10,12 +10,14 @@
  * consumidor precise fazer a costura.
  */
 
+import { FRONT_CREW_SEATS } from '../../data/aircraft/c98.arms.ts';
 import {
   armOfSeat,
   type CabinSeat,
   type PassengerStation,
   type SeatSide,
 } from '../../data/aircraft/c98.seats.ts';
+import type { CrewMember } from '../models/plan.ts';
 
 /** Um assento pronto para uso: identidade, braço e lado já resolvidos. */
 export interface SeatSlot {
@@ -60,6 +62,77 @@ export function resolveSeats(
   }
 
   return resolved;
+}
+
+/** Um tripulante extra, sentado num assento da cabine em vez de na frente. */
+export interface CrewSeatAssignment {
+  readonly crewId: string;
+  readonly crewRole: string;
+  readonly weightKg: number;
+  readonly seat: SeatSlot;
+}
+
+/**
+ * Como piloto, copiloto, tripulantes extras e passageiros se repartem entre os
+ * assentos.
+ */
+export interface CrewSeatPlan {
+  /** Tripulantes extras, na ordem em que ocupam a cabine. */
+  readonly assignments: readonly CrewSeatAssignment[];
+  /** Assentos que sobraram para passageiro, na mesma ordem física. */
+  readonly passengerSeats: readonly SeatSlot[];
+  /**
+   * Tripulante extra sem assento — só ocorre com mais gente na cabine do que
+   * lugares instalados, o que não deveria acontecer em operação normal.
+   * Mantido na tripulação com o braço dianteiro como aproximação, para que o
+   * peso dele nunca desapareça do cálculo.
+   */
+  readonly unseated: readonly CrewMember[];
+}
+
+/**
+ * Reparte piloto/copiloto (braço dianteiro fixo) e tripulantes extras
+ * (assento da cabine) entre si.
+ *
+ * Decisão do esquadrão, não do manual: o Mecânico senta no assento 4, e cada
+ * tripulante acrescentado depois ocupa o assento seguinte na mesma ordem
+ * física em que os passageiros são distribuídos — a mesma lista que
+ * `resolveSeats` devolve, sem outra fonte de posição. Assim "travar" um
+ * tripulante extra a um assento é automático: o terceiro tripulante da lista
+ * (o primeiro além de piloto e copiloto) sempre cai no primeiro assento da
+ * cabine, esteja ele em qual matrícula estiver.
+ *
+ * O braço errado de um tripulante desloca o CG calculado sem nenhum aviso na
+ * tela — por isso esta função existe como um ponto único, testado, em vez de
+ * cada consumidor calcular "quem senta onde" à sua maneira.
+ */
+export function assignCrewSeats(
+  crew: readonly CrewMember[],
+  seats: readonly SeatSlot[],
+): CrewSeatPlan {
+  const extra = crew.slice(FRONT_CREW_SEATS);
+  const assignments: CrewSeatAssignment[] = [];
+  const unseated: CrewMember[] = [];
+
+  extra.forEach((member, index) => {
+    const seat = seats[index];
+    if (!seat) {
+      unseated.push(member);
+      return;
+    }
+    assignments.push({
+      crewId: member.id,
+      crewRole: member.role,
+      weightKg: member.weightKg,
+      seat,
+    });
+  });
+
+  return {
+    assignments,
+    passengerSeats: seats.slice(extra.length),
+    unseated,
+  };
 }
 
 /** Soma o peso lançado nos assentos de uma estação. */

@@ -1,16 +1,27 @@
 import { describe, expect, it } from 'vitest';
 
-import { positionsFor } from '../../data/aircraft/index.ts';
+import {
+  cabinSeatsFor,
+  passengerStationsFor,
+  positionsFor,
+} from '../../data/aircraft/index.ts';
 import type { AircraftProfile } from '../../data/aircraft/types.ts';
 import type { MissionPlan } from '../models/plan.ts';
 import { makePlan } from './__fixtures__/plan.ts';
 import { pendingProfile, realProfile } from './__fixtures__/profile.ts';
 import { evaluateLimits, type LimitCheck } from './limits.ts';
+import { resolveSeats } from './seats.ts';
 import { computeTotals } from './totals.ts';
 
 function evaluate(plan: MissionPlan, profile: AircraftProfile) {
   const positions = positionsFor(profile);
-  return evaluateLimits(plan, computeTotals(plan, positions), profile, positions);
+  const seats = resolveSeats(cabinSeatsFor(profile), passengerStationsFor(profile));
+  return evaluateLimits(
+    plan,
+    computeTotals(plan, positions, seats),
+    profile,
+    positions,
+  );
 }
 
 function find(checks: readonly LimitCheck[], id: string): LimitCheck {

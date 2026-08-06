@@ -91,8 +91,10 @@ export function buildManifestRows(
   }
 
   /* Assento a assento, como no manifesto do manual: é o que permite conferir
-     onde cada pessoa está sentada, e não só quanto pesam somadas. */
-  const occupied = result.seats.filter(
+     onde cada pessoa está sentada, e não só quanto pesam somadas. Só os
+     assentos de PASSAGEIRO — um tripulante extra já apareceu no laço acima,
+     pelo cargo, e listá-lo de novo pelo assento duplicaria a linha. */
+  const occupied = result.crewSeatPlan.passengerSeats.filter(
     (seat) => (plan.passengerLoads[seat.id] ?? 0) > 0,
   );
   for (const seat of occupied) {
