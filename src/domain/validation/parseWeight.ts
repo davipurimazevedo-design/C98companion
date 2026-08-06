@@ -11,6 +11,7 @@
  */
 
 import { INPUT_DECIMALS } from '../../config/input.ts';
+import { normalize } from './normalize.ts';
 
 /** O que há de errado com o valor digitado, se houver. */
 export type InputIssue =
@@ -28,15 +29,6 @@ export interface ParsedWeight {
   readonly value: number;
   /** `null` quando a entrada é válida e preenchida. */
   readonly issue: InputIssue | null;
-}
-
-/** Aceita vírgula como separador decimal e ignora espaços e separador de milhar. */
-function normalize(raw: string): string {
-  return raw
-    .trim()
-    .replace(/\s/g, '')
-    .replace(/\.(?=\d{3}\b)/g, '') // 1.234 → 1234
-    .replace(',', '.');
 }
 
 /**
