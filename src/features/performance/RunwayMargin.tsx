@@ -12,7 +12,7 @@
 import { RUNWAY_CRITICAL_USED_PCT } from '../../data/operational.ts';
 import type { RunwayMargin as Margin } from '../../domain/performance/index.ts';
 import { feetToMetres } from '../../data/conversion.ts';
-import { formatFt, formatM, formatPct } from '../../utils/format.ts';
+import { formatM, formatPct } from '../../utils/format.ts';
 import styles from './RunwayMargin.module.css';
 
 const VERDICT_LABEL: Record<Margin['verdict'], string> = {
@@ -20,6 +20,11 @@ const VERDICT_LABEL: Record<Margin['verdict'], string> = {
   critica: 'Pista crítica',
   insuficiente: 'Pista insuficiente',
 };
+
+/** Distância em metros, a partir dos pés em que o manual publica. */
+function metres(feet: number): string {
+  return formatM(feetToMetres(feet));
+}
 
 export function RunwayMargin({ margin }: { readonly margin: Margin }) {
   const { verdict, usedPct, marginFt, runwayFt, requiredFt } = margin;
@@ -37,12 +42,10 @@ export function RunwayMargin({ margin }: { readonly margin: Margin }) {
       </div>
 
       <p className={styles.detail}>
-        Exige {formatFt(requiredFt)} ft ({formatM(feetToMetres(requiredFt))} m)
-        de {formatFt(runwayFt)} ft ({formatM(feetToMetres(runwayFt))} m)
-        disponíveis.{' '}
+        Exige {metres(requiredFt)} m de {metres(runwayFt)} m disponíveis.{' '}
         {marginFt >= 0
-          ? `Sobram ${formatM(feetToMetres(marginFt))} m.`
-          : `Faltam ${formatM(feetToMetres(-marginFt))} m.`}
+          ? `Sobram ${metres(marginFt)} m.`
+          : `Faltam ${metres(-marginFt)} m.`}
       </p>
 
       <p className={styles.caveat}>

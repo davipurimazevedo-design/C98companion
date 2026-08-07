@@ -13,9 +13,11 @@
  * Os valores de eixo efetivamente lidos aparecem em destaque porque a leitura
  * é conservadora: quem informou 8.600 lb precisa ver que a resposta veio da
  * tabela de 8.750.
+ *
+ * As distâncias são exibidas em METROS, que é a unidade das cartas e do
+ * comprimento de pista publicado. O manual publica em pés, e é em pés que o
+ * cálculo inteiro acontece — a conversão é só de exibição, no último passo.
  */
-
-import type { ReactNode } from 'react';
 
 import {
   describeFailure,
@@ -26,16 +28,15 @@ import type {
   ConditionsField,
   WindDirectionChoice,
 } from '../../store/performanceDraft.ts';
+import { feetToMetres } from '../../data/conversion.ts';
 import { Section } from '../../ui/components/Section.tsx';
-import { formatFt, formatInteger } from '../../utils/format.ts';
+import { formatInteger } from '../../utils/format.ts';
 import { ConditionsFields } from './ConditionsFields.tsx';
 import { RunwayMargin } from './RunwayMargin.tsx';
 import styles from './DistanceCard.module.css';
 
 interface DistanceCardProps {
   readonly title: string;
-  /** Controle exibido na linha do título. Hoje, o ajuste de flap. */
-  readonly control?: ReactNode;
   /** Explica qual peso este cartão espera. */
   readonly weightHint: string;
   readonly conditions: ConditionsDraft;
@@ -65,17 +66,29 @@ function signedPct(percent: number): string {
   return percent < 0 ? `−${Math.abs(percent)}%` : `+${percent}%`;
 }
 
-/** Pés com sinal explícito, para a linha de efeito do vento. */
-function signedFt(feet: number): string {
-  if (feet === 0) return '—';
-  return feet < 0
-    ? `−${formatFt(Math.abs(feet))}`
-    : `+${formatFt(feet)}`;
+/** Distância em metros inteiros, a partir dos pés do manual. */
+function metres(feet: number): number {
+  return Math.round(feetToMetres(feet));
+}
+
+/**
+ * A variação do vento, em metros, com sinal explícito.
+ *
+ * É a DIFERENÇA entre os dois valores exibidos, e não a conversão do desconto
+ * em pés. Convertendo e arredondando cada linha por conta própria, a coluna
+ * podia não fechar por um metro — e quem confere somando à mão veria um erro
+ * onde não há.
+ */
+function windDelta(fromMetres: number, toMetres: number): string {
+  const delta = toMetres - fromMetres;
+  if (delta === 0) return '—';
+  return delta < 0
+    ? `−${formatInteger(-delta)}`
+    : `+${formatInteger(delta)}`;
 }
 
 export function DistanceCard({
   title,
-  control,
   weightHint,
   conditions,
   outcome,
@@ -83,7 +96,9 @@ export function DistanceCard({
   onChangeWindDirection,
 }: DistanceCardProps) {
   const subtotal =
-    outcome.status === 'ready' ? `${formatFt(outcome.value.wind.totalFt)} ft` : '—';
+    outcome.status === 'ready'
+      ? `${formatInteger(metres(outcome.value.wind.totalFt))} m`
+      : '—';
 
   return (
     <Section
@@ -93,7 +108,6 @@ export function DistanceCard({
         outcome.status === 'ready' &&
         outcome.value.margin?.verdict === 'insuficiente'
       }
-      {...(control ? { control } : {})}
     >
       <ConditionsFields
         conditions={conditions}
@@ -126,6 +140,18 @@ function Result({
 }) {
   const { reading, chart, wind, margin, table } = outcome;
 
+  /* Os quatro números exibidos, em metros inteiros. As duas pontas são a
+     conversão fiel do que o manual publica; a linha do meio é a diferença
+     entre elas, para que a coluna feche somada à mão. */
+  const tabela = {
+    solo: metres(chart.groundRollFt),
+    total: metres(chart.totalFt),
+  };
+  const corrigida = {
+    solo: metres(wind.groundRollFt),
+    total: metres(wind.totalFt),
+  };
+
   return (
     <>
       <div className={styles.read}>
@@ -141,7 +167,7 @@ function Result({
         <thead>
           <tr>
             <th scope="col" className={styles.rowHead}>
-              Distância
+              Metros
             </th>
             <th scope="col">Corrida no solo</th>
             <th scope="col">Para 50 ft</th>
@@ -152,8 +178,8 @@ function Result({
             <th scope="row" className={styles.rowHead}>
               Tabela
             </th>
-            <td>{formatFt(chart.groundRollFt)}</td>
-            <td>{formatFt(chart.totalFt)}</td>
+            <td>{formatInteger(tabela.solo)}</td>
+            <td>{formatInteger(tabela.total)}</td>
           </tr>
           <tr>
             <th scope="row" className={styles.rowHead}>
@@ -166,15 +192,15 @@ function Result({
                 </>
               )}
             </th>
-            <td>{signedFt(wind.groundRollDeltaFt)}</td>
-            <td>{signedFt(wind.totalDeltaFt)}</td>
+            <td>{windDelta(tabela.solo, corrigida.solo)}</td>
+            <td>{windDelta(tabela.total, corrigida.total)}</td>
           </tr>
           <tr className={styles.total}>
             <th scope="row" className={styles.rowHead}>
               Corrigida
             </th>
-            <td>{formatFt(wind.groundRollFt)}</td>
-            <td>{formatFt(wind.totalFt)}</td>
+            <td>{formatInteger(corrigida.solo)}</td>
+            <td>{formatInteger(corrigida.total)}</td>
           </tr>
         </tbody>
       </table>

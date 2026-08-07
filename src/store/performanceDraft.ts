@@ -21,7 +21,6 @@ import {
   MIN_INPUT_TEMPERATURE_C,
 } from '../config/input.ts';
 import { metresToFeet } from '../data/conversion.ts';
-import type { TakeoffFlaps } from '../data/performance/index.ts';
 import type { PerformanceQuery } from '../domain/performance/index.ts';
 import { parseSignedNumber } from '../domain/validation/parseNumber.ts';
 
@@ -45,7 +44,6 @@ export interface ConditionsDraft {
 
 export interface PerformanceDraft {
   readonly takeoff: ConditionsDraft;
-  readonly takeoffFlaps: TakeoffFlaps;
   readonly landing: ConditionsDraft;
 }
 
@@ -64,13 +62,9 @@ const EMPTY_CONDITIONS: ConditionsDraft = {
   runway: '',
 };
 
-/** Rascunho de partida: tudo em branco, flaps 20° como a decolagem usual. */
+/** Rascunho de partida: tudo em branco. */
 export function initialPerformanceDraft(): PerformanceDraft {
-  return {
-    takeoff: EMPTY_CONDITIONS,
-    takeoffFlaps: 20,
-    landing: EMPTY_CONDITIONS,
-  };
+  return { takeoff: EMPTY_CONDITIONS, landing: EMPTY_CONDITIONS };
 }
 
 /** Faixas de digitação de cada campo, para o campo e a mensagem de erro. */

@@ -21,11 +21,10 @@
  */
 
 import {
-  takeoffTableFor,
+  C98_LANDING,
+  C98_TAKEOFF_FLAPS_20,
   type DistanceTable,
-  type TakeoffFlaps,
 } from '../../data/performance/index.ts';
-import { C98_LANDING } from '../../data/performance/index.ts';
 import { RUNWAY_CRITICAL_USED_PCT } from '../../data/operational.ts';
 import {
   applyTemperatureFactor,
@@ -197,12 +196,9 @@ function computeDistance(
   };
 }
 
-/** Distância de decolagem, no ajuste de flap escolhido. */
-export function computeTakeoff(
-  query: PerformanceQuery,
-  flaps: TakeoffFlaps,
-): PerformanceOutcome {
-  return computeDistance(takeoffTableFor(flaps), query);
+/** Distância de decolagem, técnica de pista curta com flaps 20°. */
+export function computeTakeoff(query: PerformanceQuery): PerformanceOutcome {
+  return computeDistance(C98_TAKEOFF_FLAPS_20, query);
 }
 
 /** Distância de pouso. */

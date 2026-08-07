@@ -30,8 +30,8 @@ function query(overrides: Partial<PerformanceQuery> = {}): PerformanceQuery {
 }
 
 /** Atalho para os casos em que o resultado tem que existir. */
-function takeoff(overrides: Partial<PerformanceQuery>, flaps: 20 | 0 = 20) {
-  const outcome = computeTakeoff(query(overrides), flaps);
+function takeoff(overrides: Partial<PerformanceQuery>) {
+  const outcome = computeTakeoff(query(overrides));
   if (outcome.status !== 'ready') {
     throw new Error(`Resultado indisponível: ${JSON.stringify(outcome)}`);
   }
@@ -109,7 +109,6 @@ describe('campos em branco', () => {
   it('sem peso, sem altitude e sem temperatura, o resultado é incompleto', () => {
     const outcome = computeTakeoff(
       query({ weightLb: null, pressureAltitudeFt: null, temperatureC: null }),
-      20,
     );
 
     expect(outcome).toEqual({
@@ -148,7 +147,7 @@ describe('extremos de cada eixo', () => {
   });
 
   it('acima do peso máximo, não há resultado', () => {
-    const outcome = computeTakeoff(query({ weightLb: 8751 }), 20);
+    const outcome = computeTakeoff(query({ weightLb: 8751 }));
 
     expect(outcome.status).toBe('unavailable');
     if (outcome.status !== 'unavailable') return;
@@ -164,7 +163,7 @@ describe('extremos de cada eixo', () => {
   });
 
   it('acima da altitude máxima, não há resultado', () => {
-    const outcome = computeTakeoff(query({ pressureAltitudeFt: 12_500 }), 20);
+    const outcome = computeTakeoff(query({ pressureAltitudeFt: 12_500 }));
 
     expect(outcome.status).toBe('unavailable');
     if (outcome.status !== 'unavailable') return;
@@ -176,18 +175,10 @@ describe('extremos de cada eixo', () => {
     expect(takeoff({ temperatureC: 40 }).reading.temperatureC).toBe(40);
   });
 
-  it('flaps 0° aceita −20 °C, que a tabela de flaps 20° não tem', () => {
-    expect(takeoff({ temperatureC: -20 }, 0).reading.temperatureC).toBe(-20);
-    /* Na tabela de flaps 20°, −20 °C sobe para a coluna de −10. */
-    expect(takeoff({ temperatureC: -20 }, 20).reading.temperatureC).toBe(-10);
-  });
-
-  it('flaps 0° recusa acima de 10 °C, por não ter a nota da outra tabela', () => {
-    const outcome = computeTakeoff(query({ temperatureC: 20 }), 0);
-
-    expect(outcome.status).toBe('unavailable');
-    if (outcome.status !== 'unavailable') return;
-    expect(describeFailure(outcome.failure)).toContain('10 °C');
+  it('abaixo da coluna mais fria, lê a coluna mais fria', () => {
+    /* Ar mais quente exige mais pista: ler −10 °C num dia de −20 é o lado
+       conservador, e é por isso que abaixo do eixo nunca há recusa. */
+    expect(takeoff({ temperatureC: -20 }).reading.temperatureC).toBe(-10);
   });
 });
 
@@ -213,7 +204,7 @@ describe('vento', () => {
   });
 
   it('11 nós de cauda passam do que o manual cobre', () => {
-    const outcome = computeTakeoff(query({ windKt: -11 }), 20);
+    const outcome = computeTakeoff(query({ windKt: -11 }));
 
     expect(outcome.status).toBe('unavailable');
     if (outcome.status !== 'unavailable') return;
@@ -231,7 +222,7 @@ describe('vento', () => {
   });
 });
 
-describe('nota 6: acima de 40 °C na tabela de flaps 20°', () => {
+describe('nota 6: acima de 40 °C na tabela de decolagem', () => {
   it('multiplica a coluna de 40 °C por 1,2 antes do vento', () => {
     const result = takeoff({ weightLb: 8750, pressureAltitudeFt: 0, temperatureC: 45 });
 

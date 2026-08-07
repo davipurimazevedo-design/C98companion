@@ -11,7 +11,6 @@ import { describe, expect, it } from 'vitest';
 
 import {
   C98_LANDING,
-  C98_TAKEOFF_FLAPS_0,
   C98_TAKEOFF_FLAPS_20,
 } from '../../data/performance/index.ts';
 import { describeReadFailure, nextAtOrAbove, readTable } from './lookup.ts';
@@ -173,23 +172,7 @@ describe('fora da tabela', () => {
     });
   });
 
-  it('temperatura acima de 10 °C na tabela de flaps 0°, que não tem nota', () => {
-    const reading = readTable(C98_TAKEOFF_FLAPS_0, {
-      weightLb: 8000,
-      pressureAltitudeFt: 0,
-      temperatureC: 11,
-    });
-
-    expect(reading.status).toBe('unavailable');
-    if (reading.status !== 'unavailable') return;
-    expect(reading.failure).toEqual({
-      reason: 'fora-da-tabela',
-      axis: 'temperatura',
-      publishedMax: 10,
-    });
-  });
-
-  it('temperatura acima de 40 °C no pouso, que também não tem nota', () => {
+  it('temperatura acima de 40 °C no pouso, que não tem a nota da decolagem', () => {
     const reading = readTable(C98_LANDING, {
       weightLb: 7000,
       pressureAltitudeFt: 0,

@@ -22,7 +22,6 @@ import {
 import { DistanceCard } from '../features/performance/DistanceCard.tsx';
 import { toPerformanceQuery } from '../store/performanceDraft.ts';
 import { usePerformanceStore } from '../store/performanceStore.ts';
-import { SegmentedControl } from '../ui/components/SegmentedControl.tsx';
 import { VersionBar } from '../ui/components/VersionBar.tsx';
 import styles from './PerformanceScreen.module.css';
 
@@ -30,12 +29,11 @@ export function PerformanceScreen({ nav }: { readonly nav: ReactNode }) {
   const draft = usePerformanceStore((state) => state.draft);
   const setField = usePerformanceStore((state) => state.setField);
   const setWindDirection = usePerformanceStore((state) => state.setWindDirection);
-  const setTakeoffFlaps = usePerformanceStore((state) => state.setTakeoffFlaps);
   const reset = usePerformanceStore((state) => state.reset);
 
   const takeoff = useMemo(
-    () => computeTakeoff(toPerformanceQuery(draft.takeoff), draft.takeoffFlaps),
-    [draft.takeoff, draft.takeoffFlaps],
+    () => computeTakeoff(toPerformanceQuery(draft.takeoff)),
+    [draft.takeoff],
   );
 
   const landing = useMemo(
@@ -65,18 +63,6 @@ export function PerformanceScreen({ nav }: { readonly nav: ReactNode }) {
         <DistanceCard
           title="Decolagem"
           weightHint="Peso na decolagem"
-          control={
-            <SegmentedControl
-              compact
-              label="Ajuste de flap na decolagem"
-              value={draft.takeoffFlaps === 0 ? 'flaps-0' : 'flaps-20'}
-              onChange={(value) => setTakeoffFlaps(value === 'flaps-0' ? 0 : 20)}
-              options={[
-                { value: 'flaps-20', label: 'Flaps 20°' },
-                { value: 'flaps-0', label: 'Flaps 0°' },
-              ]}
-            />
-          }
           conditions={draft.takeoff}
           outcome={takeoff}
           onChangeField={(field, value) => setField('takeoff', field, value)}
@@ -98,9 +84,14 @@ export function PerformanceScreen({ nav }: { readonly nav: ReactNode }) {
 
         <p className={styles.scope}>
           Tabelas da aeronave <strong>com cargo pod instalado</strong>, técnica
-          de pista curta, pista pavimentada, nivelada e seca. Pista de grama,
-          separador inercial em bypass e aquecimento de cabine ligado exigem os
-          acréscimos das notas da figura, que este cartão ainda não aplica.
+          de pista curta, <strong>flaps 20° na decolagem e 30° no pouso</strong>,
+          pista pavimentada, nivelada e seca. Pista de grama, separador inercial
+          em bypass e aquecimento de cabine ligado exigem os acréscimos das
+          notas da figura, que este cartão ainda não aplica.
+        </p>
+        <p className={styles.scope}>
+          As distâncias saem do manual em pés e são exibidas convertidas em
+          metros, para bater com as cartas. A altitude-pressão continua em pés.
         </p>
       </main>
 

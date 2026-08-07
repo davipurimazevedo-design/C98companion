@@ -12,7 +12,6 @@
  */
 
 import { MAX_INPUT_LB } from '../../config/input.ts';
-import { metresToFeet } from '../../data/conversion.ts';
 import {
   FIELD_RANGE,
   type ConditionsDraft,
@@ -22,9 +21,7 @@ import {
 import { FieldRow } from '../../ui/components/FieldRow.tsx';
 import { SegmentedControl } from '../../ui/components/SegmentedControl.tsx';
 import { WeightInput } from '../../ui/components/WeightInput.tsx';
-import { parseSignedNumber } from '../../domain/validation/parseNumber.ts';
 import { fieldError, signedFieldError } from '../../ui/fieldError.ts';
-import { formatFt } from '../../utils/format.ts';
 import styles from './ConditionsFields.module.css';
 
 interface ConditionsFieldsProps {
@@ -75,22 +72,6 @@ export function ConditionsFields({
   );
   const windError = fieldError(conditions.wind, FIELD_RANGE.wind.max);
   const runwayError = fieldError(conditions.runway, FIELD_RANGE.runway.max);
-
-  /* Equivalente em pés ao lado do campo: as cartas publicam metros, e as
-     tabelas do manual, pés. Ver os dois evita a conversão de cabeça.
-
-     A leitura passa pelo MESMO parser do cálculo, e não por um `Number()`
-     próprio: um separador de milhar aceito aqui e recusado ali faria a dica
-     discordar da distância exibida logo abaixo. */
-  const runwayM = parseSignedNumber(
-    conditions.runway,
-    FIELD_RANGE.runway.min,
-    FIELD_RANGE.runway.max,
-  ).value;
-  const runwayHint =
-    runwayM !== null && runwayM > 0
-      ? `${formatFt(metresToFeet(runwayM))} ft`
-      : 'Comprimento disponível';
 
   return (
     <>
@@ -164,7 +145,11 @@ export function ConditionsFields({
         />
       </FieldRow>
 
-      <FieldRow label="Pista" hint={runwayHint} error={runwayError}>
+      <FieldRow
+        label="Pista"
+        hint="Comprimento disponível"
+        error={runwayError}
+      >
         <WeightInput
           value={conditions.runway}
           unit="m"

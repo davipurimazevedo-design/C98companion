@@ -17,11 +17,16 @@ import type {
   WindDirectionChoice,
 } from '../store/performanceDraft.ts';
 import { initialPerformanceDraft } from '../store/performanceDraft.ts';
-import type { TakeoffFlaps } from '../data/performance/index.ts';
 
 const KEY = 'planejador-c98:performance';
 
-/** Versão do formato salvo. Incrementar quando `PerformanceDraft` mudar. */
+/**
+ * Versão do formato salvo. Incrementar quando `PerformanceDraft` mudar de
+ * modo INCOMPATÍVEL — um campo que passa a significar outra coisa, ou uma
+ * unidade trocada. Campo removido não conta: `takeoffFlaps` saiu junto com a
+ * tabela de flaps 0°, e um rascunho antigo que ainda o traga é lido sem ele,
+ * sem que o piloto perca o que já havia digitado.
+ */
 const VERSION = 1;
 
 interface Envelope {
@@ -39,10 +44,6 @@ function asText(value: unknown): string {
 
 function asWindDirection(value: unknown): WindDirectionChoice {
   return value === 'cauda' ? 'cauda' : 'proa';
-}
-
-function asFlaps(value: unknown): TakeoffFlaps {
-  return value === 0 ? 0 : 20;
 }
 
 function sanitizeConditions(value: unknown): ConditionsDraft {
@@ -78,7 +79,6 @@ export function loadPerformanceDraft(): PerformanceDraft {
 
     return {
       takeoff: sanitizeConditions(draft['takeoff']),
-      takeoffFlaps: asFlaps(draft['takeoffFlaps']),
       landing: sanitizeConditions(draft['landing']),
     };
   } catch {

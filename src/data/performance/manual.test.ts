@@ -11,11 +11,7 @@
 
 import { describe, expect, it } from 'vitest';
 
-import {
-  C98_LANDING,
-  C98_TAKEOFF_FLAPS_0,
-  C98_TAKEOFF_FLAPS_20,
-} from './index.ts';
+import { C98_LANDING, C98_TAKEOFF_FLAPS_20 } from './index.ts';
 import type { DistanceTable } from './types.ts';
 
 /** Lê uma célula pelos valores dos eixos, como se lê a página impressa. */
@@ -116,71 +112,6 @@ describe('decolagem flaps 20° — Figura 5-9 (páginas 5-22 e 5-23)', () => {
     expect(table.notes).toHaveLength(6);
     expect(table.notes[1]).toContain('11 nós');
     expect(table.notes[1]).toContain('2 nós');
-  });
-});
-
-describe('decolagem flaps 0° — Figura 5-9A (páginas 5-24 e 5-25)', () => {
-  const table = C98_TAKEOFF_FLAPS_0;
-
-  it('o eixo de temperatura é outro: −20 a 10 °C', () => {
-    /* A diferença mais importante entre as duas tabelas de decolagem. Ler a
-       de flaps 0° com o eixo da de flaps 20° devolveria a coluna errada. */
-    expect(table.temperaturesC).toEqual([-20, -10, 0, 10]);
-    expect(table.pressureAltitudesFt).toEqual([0, 2000, 4000, 6000, 8000, 10_000, 12_000]);
-  });
-
-  it('as velocidades são as mesmas nos quatro pesos: 83 e 104 KIAS', () => {
-    expect(table.blocks.map((b) => [b.weightLb, b.liftOffKias, b.at50FtKias])).toEqual([
-      [7300, 83, 104],
-      [7800, 83, 104],
-      [8300, 83, 104],
-      [8750, 83, 104],
-    ]);
-  });
-
-  it('cantos do bloco de 8750 lb', () => {
-    expect(cell(table, 8750, 0, -20)).toEqual([1720, 3205]);
-    expect(cell(table, 8750, 0, 10)).toEqual([2085, 3880]);
-    expect(cell(table, 8750, 12_000, -20)).toEqual([3930, 7485]);
-    expect(cell(table, 8750, 12_000, 10)).toEqual([5955, 12_585]);
-  });
-
-  it('cantos do bloco de 8300 lb', () => {
-    expect(cell(table, 8300, 0, -20)).toEqual([1620, 3015]);
-    expect(cell(table, 8300, 0, 10)).toEqual([1965, 3650]);
-    expect(cell(table, 8300, 12_000, -20)).toEqual([3690, 7010]);
-    expect(cell(table, 8300, 12_000, 10)).toEqual([5570, 11_705]);
-  });
-
-  it('cantos do bloco de 7800 lb', () => {
-    expect(cell(table, 7800, 0, -20)).toEqual([1510, 2810]);
-    expect(cell(table, 7800, 0, 10)).toEqual([1830, 3395]);
-    expect(cell(table, 7800, 12_000, -20)).toEqual([3430, 6495]);
-    expect(cell(table, 7800, 12_000, 10)).toEqual([5155, 10_765]);
-  });
-
-  it('cantos do bloco de 7300 lb', () => {
-    expect(cell(table, 7300, 0, -20)).toEqual([1405, 2605]);
-    expect(cell(table, 7300, 0, 10)).toEqual([1695, 3145]);
-    expect(cell(table, 7300, 12_000, -20)).toEqual([3170, 5995]);
-    expect(cell(table, 7300, 12_000, 10)).toEqual([4750, 9865]);
-  });
-
-  it('não há traço nenhum: a tabela para em 10 °C', () => {
-    const todas = table.blocks.flatMap((block) => block.cells.flat());
-    expect(todas.every((item) => item !== null)).toBe(true);
-  });
-
-  it('não existe nota autorizando operar acima da coluna mais quente', () => {
-    expect(table.aboveTopTemperature).toBeNull();
-  });
-
-  it('flaps 0° exige mais pista que flaps 20° no mesmo ponto da grade', () => {
-    /* Confere que as duas tabelas não foram trocadas uma pela outra. */
-    const zero = cell(table, 8750, 4000, 0);
-    const vinte = cell(C98_TAKEOFF_FLAPS_20, 8750, 4000, 0);
-    expect(zero?.[0]).toBeGreaterThan(vinte?.[0] ?? 0);
-    expect(zero?.[1]).toBeGreaterThan(vinte?.[1] ?? 0);
   });
 });
 

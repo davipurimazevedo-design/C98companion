@@ -142,12 +142,17 @@ as tabelas sem pod não estão cadastradas.
 | Arquivo | Tabela | Figura | Páginas |
 |---|---|---|---|
 | `c98.takeoff20.ts` | Decolagem short field, flaps 20° | 5-9 | 5-22, 5-23 |
-| `c98.takeoff0.ts` | Decolagem, flaps 0° | 5-9A | 5-24, 5-25 |
 | `c98.landing.ts` | Pouso short field, flaps 30° | 5-23 | 5-59, 5-60 |
 
-Cada tabela carrega os **próprios eixos**. A de flaps 0° vai de −20 a 10 °C, e
-as outras de −10 a 40 °C — ler uma com o eixo da outra devolveria a coluna
+Cada tabela carrega os **próprios eixos**, e nenhuma parte do código pressupõe
+uma faixa comum — ler uma tabela com o eixo de outra devolveria a coluna
 errada em silêncio.
+
+A decolagem com flaps 0° (Figura 5-9A, páginas 5-24 e 5-25) foi transcrita e
+depois **retirada** por decisão do esquadrão: aquela tabela vale para a técnica
+de decolagem com fluido anti-gelo tipo II, III ou IV, e sua coluna mais quente
+é 10 °C, de modo que em operação no Brasil ela responderia "fora da tabela"
+quase sempre. A transcrição continua recuperável no commit `d423d1e`.
 
 São cerca de novecentos números copiados à mão, e um dígito trocado não
 aparece como erro: aparece como distância plausível e falsa. Duas auditorias

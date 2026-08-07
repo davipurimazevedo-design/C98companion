@@ -9,7 +9,6 @@
 
 import { create } from 'zustand';
 
-import type { TakeoffFlaps } from '../data/performance/index.ts';
 import {
   loadPerformanceDraft,
   savePerformanceDraft,
@@ -34,7 +33,6 @@ interface PerformanceStore {
     key: ConditionsKey,
     direction: WindDirectionChoice,
   ) => void;
-  setTakeoffFlaps: (flaps: TakeoffFlaps) => void;
   reset: () => void;
 }
 
@@ -56,9 +54,6 @@ export const usePerformanceStore = create<PerformanceStore>()((set) => ({
         [key]: { ...state.draft[key], windDirection: direction },
       },
     })),
-
-  setTakeoffFlaps: (flaps) =>
-    set((state) => ({ draft: { ...state.draft, takeoffFlaps: flaps } })),
 
   reset: () => set({ draft: initialPerformanceDraft() }),
 }));
