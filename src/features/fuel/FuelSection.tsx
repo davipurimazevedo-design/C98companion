@@ -16,6 +16,7 @@
 
 import { MAX_INPUT_L, MAX_INPUT_LB } from '../../config/input.ts';
 import { lbToLitres } from '../../data/conversion.ts';
+import { MINIMUM_TAKEOFF_FUEL_LB } from '../../data/operational.ts';
 import { FieldRow } from '../../ui/components/FieldRow.tsx';
 import { SegmentedControl } from '../../ui/components/SegmentedControl.tsx';
 import { Section } from '../../ui/components/Section.tsx';
@@ -146,6 +147,11 @@ export function FuelSection({
           )}
         </div>
       )}
+
+      <p className={styles.capacity}>
+        O campo começa com {formatLb(MINIMUM_TAKEOFF_FUEL_LB)} LB, o mínimo com
+        que a unidade decola — não é limite do manual, e pode ser alterado.
+      </p>
 
       {totalCapacityLb !== null && totalCapacityL !== null && (
         <p className={styles.capacity}>

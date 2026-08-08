@@ -95,9 +95,11 @@ export function DistanceCard({
   onChangeField,
   onChangeWindDirection,
 }: DistanceCardProps) {
+  /* A corrida no solo, e não a distância para 50 pés: é o número que a
+     margem de pista compara, e cabeçalho e veredito têm que falar do mesmo. */
   const subtotal =
     outcome.status === 'ready'
-      ? `${formatInteger(metres(outcome.value.wind.totalFt))} m`
+      ? `${formatInteger(metres(outcome.value.wind.groundRollFt))} m`
       : '—';
 
   return (
@@ -167,10 +169,16 @@ function Result({
         <thead>
           <tr>
             <th scope="col" className={styles.rowHead}>
-              Metros
+              Distância
             </th>
-            <th scope="col">Corrida no solo</th>
-            <th scope="col">Para 50 ft</th>
+            {/* A unidade no cabeçalho, e não repetida em cada célula: é a
+                mesma convenção da conferência de carregamento. */}
+            <th scope="col">
+              Corrida no solo <span className={styles.unit}>(m)</span>
+            </th>
+            <th scope="col">
+              Para 50 ft <span className={styles.unit}>(m)</span>
+            </th>
           </tr>
         </thead>
         <tbody>

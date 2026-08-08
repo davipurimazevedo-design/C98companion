@@ -54,3 +54,4 @@ selo num `0.x` se a validação vier antes de qualquer motivo para subir para
 | 0.3.1 | Correção: tripulante extra além do Mecânico reservava assento da cabine mesmo com o peso em branco, empurrando passageiros reais para assentos mais traseiros e deslocando o CG sem nenhum peso justificando |
 | 0.4.0 | Módulo de Performance: distância de decolagem (flaps 20° e 0°) e de pouso, lidas das tabelas da Section 5 do POH, corrigidas para vento e comparadas com o comprimento da pista. Abas no topo separando as duas telas |
 | 0.5.0 | Performance só com flaps 20° na decolagem — a tabela de flaps 0°, que vale para decolagem com fluido anti-gelo e para em 10 °C, saiu. Todas as distâncias passam a ser exibidas em metros; a altitude-pressão continua em pés |
+| 0.6.0 | Margem de pista passa a comparar a CORRIDA NO SOLO, e não a distância para 50 pés; unidade nos cabeçalhos das colunas em metros. Combustível começa em 900 LB, o mínimo com que a unidade decola |

@@ -257,56 +257,65 @@ describe('nota 6: acima de 40 °C na tabela de decolagem', () => {
 });
 
 describe('margem de pista', () => {
-  /* 8750 lb, nível do mar, 20 °C: 2570 pés para transpor 50 pés. */
+  /* 8750 lb, nível do mar, 20 °C: corrida no solo 1445 pés, e 2570 pés para
+     transpor os 50 pés. */
   const base = { weightLb: 8750, pressureAltitudeFt: 0, temperatureC: 20 };
+
+  it('a conta é contra a CORRIDA NO SOLO, não contra a distância para 50 pés', () => {
+    /* Decisão de emprego da unidade. Comparar contra os 2570 pés daria uma
+       exigência quase o dobro, e é o que o cartão fazia antes. */
+    const result = takeoff({ ...base, runwayFt: 6000 });
+
+    expect(result.margin?.requiredFt).toBe(1445);
+    expect(result.wind.totalFt).toBe(2570);
+  });
 
   it('pista folgada é suficiente', () => {
     const margin = takeoff({ ...base, runwayFt: 6000 }).margin;
 
-    expect(margin?.requiredFt).toBe(2570);
-    expect(margin?.marginFt).toBe(3430);
+    expect(margin?.marginFt).toBe(4555);
     expect(margin?.verdict).toBe('suficiente');
   });
 
   it('acima de 80% da pista consumida, a margem é crítica', () => {
-    const margin = takeoff({ ...base, runwayFt: 3000 }).margin;
+    const margin = takeoff({ ...base, runwayFt: 1700 }).margin;
 
-    expect(margin?.usedPct).toBeCloseTo(85.7, 1);
+    expect(margin?.usedPct).toBeCloseTo(85.0, 1);
     expect(margin?.verdict).toBe('critica');
   });
 
   it('exatamente 80% ainda é suficiente', () => {
-    const margin = takeoff({ ...base, runwayFt: 2570 / 0.8 }).margin;
+    const margin = takeoff({ ...base, runwayFt: 1445 / 0.8 }).margin;
 
     expect(margin?.verdict).toBe('suficiente');
   });
 
-  it('pista menor que a distância exigida é insuficiente', () => {
-    const margin = takeoff({ ...base, runwayFt: 2000 }).margin;
+  it('pista menor que a corrida exigida é insuficiente', () => {
+    const margin = takeoff({ ...base, runwayFt: 1200 }).margin;
 
-    expect(margin?.marginFt).toBe(-570);
+    expect(margin?.marginFt).toBe(-245);
     expect(margin?.verdict).toBe('insuficiente');
   });
 
-  it('a margem é medida pela distância CORRIGIDA, não pela de tabela', () => {
-    const semVento = takeoff({ ...base, runwayFt: 2600 }).margin;
-    const comProa = takeoff({ ...base, runwayFt: 2600, windKt: 11 }).margin;
+  it('a margem é medida pela corrida CORRIGIDA, não pela de tabela', () => {
+    const semVento = takeoff({ ...base, runwayFt: 1500 }).margin;
+    const comProa = takeoff({ ...base, runwayFt: 1500, windKt: 11 }).margin;
 
-    /* Sem vento a pista de 2600 pés mal cobre os 2570 exigidos; com 11 nós
-       de proa a exigência cai para 2313 e sobra margem de verdade. */
-    expect(semVento?.requiredFt).toBe(2570);
-    expect(comProa?.requiredFt).toBe(2313);
+    /* Sem vento a pista de 1500 pés mal cobre os 1445 exigidos; com 11 nós
+       de proa a exigência cai para 1301 e sobra margem de verdade. */
+    expect(semVento?.requiredFt).toBe(1445);
+    expect(comProa?.requiredFt).toBe(1301);
     expect(comProa?.marginFt).toBeGreaterThan(semVento?.marginFt ?? 0);
   });
 
   it('o vento de cauda pode transformar uma pista boa em insuficiente', () => {
-    const semVento = takeoff({ ...base, runwayFt: 3400 }).margin;
-    const comCauda = takeoff({ ...base, runwayFt: 3400, windKt: -8 }).margin;
+    const semVento = takeoff({ ...base, runwayFt: 1900 }).margin;
+    const comCauda = takeoff({ ...base, runwayFt: 1900, windKt: -8 }).margin;
 
-    /* 8 nós de cauda somam 40% aos 2570 pés de tabela: 3598 pés exigidos
-       contra 3400 de pista. */
+    /* 8 nós de cauda somam 40% aos 1445 pés de corrida: 2023 pés exigidos
+       contra 1900 de pista. */
     expect(semVento?.verdict).toBe('suficiente');
-    expect(comCauda?.requiredFt).toBe(3598);
+    expect(comCauda?.requiredFt).toBe(2023);
     expect(comCauda?.verdict).toBe('insuficiente');
   });
 });

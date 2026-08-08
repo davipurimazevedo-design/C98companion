@@ -22,6 +22,18 @@
 export const AVERAGE_PASSENGER_KG = 90;
 
 /**
+ * Combustível com que todo planejamento começa, em LIBRAS.
+ *
+ * NÃO é limite do manual: é o mínimo com que a unidade decola, qualquer que
+ * seja o combustível que a missão pediria. Por isso o campo já nasce
+ * preenchido, em vez de em branco — planejar a partir de menos que isto seria
+ * planejar um voo que não acontece.
+ *
+ * O piloto pode alterar o valor à vontade; o que muda é o ponto de partida.
+ */
+export const MINIMUM_TAKEOFF_FUEL_LB = 900;
+
+/**
  * Percentual da pista a partir do qual a margem passa a ser sinalizada como
  * crítica, na tela de Performance.
  *

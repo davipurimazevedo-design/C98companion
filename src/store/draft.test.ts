@@ -10,6 +10,7 @@ import { describe, expect, it } from 'vitest';
 
 import { C98 } from '../data/aircraft/index.ts';
 import { kgToLb, lbToLitres, litresToLb } from '../data/conversion.ts';
+import { MINIMUM_TAKEOFF_FUEL_LB } from '../data/operational.ts';
 import {
   convertCargoLoads,
   convertFuelText,
@@ -285,5 +286,15 @@ describe('funções sugeridas ao acrescentar tripulante', () => {
   it('a tripulação inicial já traz piloto, copiloto e mecânico', () => {
     const crew = initialDraft('fab-2720').crew;
     expect(crew.map((member) => member.role)).toEqual(BORDO);
+  });
+
+  it('o combustível inicial é o mínimo de decolagem da unidade', () => {
+    /* Começar com o tanque em branco anunciaria uma disponibilidade de peso
+       que não existe: este combustível embarca de qualquer forma. */
+    const draft = initialDraft('fab-2720');
+
+    expect(draft.fuelUnit).toBe('LB');
+    expect(draft.fuel).toBe(String(MINIMUM_TAKEOFF_FUEL_LB));
+    expect(toMissionPlan(draft, null).fuelLb).toBe(MINIMUM_TAKEOFF_FUEL_LB);
   });
 });

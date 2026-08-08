@@ -42,15 +42,17 @@ export function RunwayMargin({ margin }: { readonly margin: Margin }) {
       </div>
 
       <p className={styles.detail}>
-        Exige {metres(requiredFt)} m de {metres(runwayFt)} m disponíveis.{' '}
+        Exige {metres(requiredFt)} m de corrida no solo, de {metres(runwayFt)} m
+        disponíveis.{' '}
         {marginFt >= 0
           ? `Sobram ${metres(marginFt)} m.`
           : `Faltam ${metres(-marginFt)} m.`}
       </p>
 
       <p className={styles.caveat}>
-        A faixa de atenção começa em {RUNWAY_CRITICAL_USED_PCT}% da pista
-        consumida. É critério de emprego desta unidade, não do POH.
+        A conta considera só a corrida no solo, e a faixa de atenção começa em{' '}
+        {RUNWAY_CRITICAL_USED_PCT}% da pista consumida. As duas coisas são
+        critério de emprego desta unidade, não do POH.
       </p>
     </div>
   );

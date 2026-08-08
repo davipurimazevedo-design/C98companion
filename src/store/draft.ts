@@ -17,6 +17,7 @@ import {
   MAX_INPUT_LB,
 } from '../config/input.ts';
 import { kgToLb, lbToKg, lbToLitres, litresToLb } from '../data/conversion.ts';
+import { MINIMUM_TAKEOFF_FUEL_LB } from '../data/operational.ts';
 import type { CargoRestraint, MissionPlan } from '../domain/models/plan.ts';
 import { parseWeight } from '../domain/validation/parseWeight.ts';
 
@@ -78,17 +79,22 @@ export function parsePassengerCount(text: string): number | null {
 }
 
 /**
- * Tripulação inicial.
+ * Rascunho de partida.
  *
  * Piloto, copiloto e mecânico já aparecem porque toda missão leva os três —
  * poupa três toques no caso normal, e o mecânico entra travado ao assento 4
  * da cabine (ver `assignCrewSeats`) desde a primeira tela, sem precisar de
  * "+ Adicionar tripulante".
+ *
+ * O combustível também nasce preenchido, com o mínimo de decolagem da unidade
+ * (`MINIMUM_TAKEOFF_FUEL_LB`). Um planejamento que comece com o tanque em
+ * branco anuncia uma disponibilidade de peso que não existe: aqueles 900 LB
+ * vão embarcar de qualquer forma.
  */
 export function initialDraft(aircraftId: string): PlanDraft {
   return {
     aircraftId,
-    fuel: '',
+    fuel: String(MINIMUM_TAKEOFF_FUEL_LB),
     fuelUnit: 'LB',
     crew: [
       { id: 'piloto', role: 'Piloto', weight: '' },

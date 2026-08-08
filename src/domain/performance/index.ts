@@ -66,7 +66,15 @@ export type RunwayVerdict = 'suficiente' | 'critica' | 'insuficiente';
 
 export interface RunwayMargin {
   readonly runwayFt: number;
-  /** Distância para transpor 50 pés, já corrigida. É o que a pista precisa ter. */
+  /**
+   * Corrida no solo já corrigida — o que a pista precisa conter.
+   *
+   * Decisão de emprego desta unidade: a comparação é contra a CORRIDA NO SOLO,
+   * e não contra a distância para transpor 50 pés. Na decolagem, os 50 pés já
+   * são percorridos no ar. No pouso, o trecho entre cruzar os 50 pés e tocar
+   * também consome pista, e essa parcela fica de fora desta conta — a
+   * distância para 50 pés continua exibida na tabela do cartão, ao lado.
+   */
   readonly requiredFt: number;
   /** Pista menos distância exigida. Negativa quando não cabe. */
   readonly marginFt: number;
@@ -191,7 +199,7 @@ function computeDistance(
       margin:
         query.runwayFt === null
           ? null
-          : computeMargin(query.runwayFt, wind.totalFt),
+          : computeMargin(query.runwayFt, wind.groundRollFt),
     },
   };
 }

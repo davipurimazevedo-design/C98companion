@@ -82,6 +82,12 @@
   text-align: left !important;
 }
 
+/* O cabeçalho da tabela é exibido em caixa alta, mas o símbolo do metro é
+   minúsculo por definição — "M" seria outra coisa. */
+.unit {
+  text-transform: none;
+}
+
 .pct {
   font-family: var(--font-num);
   font-weight: 700;
